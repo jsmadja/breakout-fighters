@@ -1,8 +1,8 @@
 const brickWidth = 30;
 const brickHeight = 16;
 const marginLeft = (320 - (8 * brickWidth)) / 2;
-const marginTop = 10;
-const maxRows = 4;
+const marginTop = 40;
+const maxRows = 2;
 const maxColumns = 8;
 
 class Brick {
@@ -41,3 +41,5 @@ class Bricks {
     }
 
 }
+
+module.exports = Bricks;

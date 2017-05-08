@@ -1,0 +1,24 @@
+{
+  "name": "breakout-fighters",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsmadja/breakout-fighters.git"
+  },
+  "author": "Julien Smadja <jsmadja@xebia.fr> (kintribe.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsmadja/breakout-fighters/issues"
+  },
+  "homepage": "https://github.com/jsmadja/breakout-fighters#readme",
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.24.1",
+    "browserify": "^14.3.0"
+  }
+}

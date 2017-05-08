@@ -1,12 +1,10 @@
-class BreakOutFighters {
+const GameEngine = require('./game-engine');
+const Bricks = require('./bricks');
+const Paddle = require('./paddle');
+const Ball = require('./ball');
+const HUD = require('./hud');
 
-    /*
-     let ball;
-     let paddle;
-     let bricks;
-     let hud;
-     let gameEngine;
-     */
+class BreakOutFighters {
 
     constructor(width, height) {
         this.width = width;
@@ -15,10 +13,18 @@ class BreakOutFighters {
 
     preload(game) {
         game.load.atlas('breakout', 'assets/games/breakout/breakout.png', 'assets/games/breakout/breakout.json');
-        game.load.image('starfield', 'assets/misc/starfield.jpg');
+        game.load.image('starfield', 'assets/back/garou_special.png');
+
+        // audio
+        game.load.audio('mai', ['assets/audio/musics/mai.mp3']);
+        game.load.audio('block', ['assets/audio/sounds/block.wav']);
+        game.load.audio('hit', ['assets/audio/sounds/hit.wav']);
+        game.load.audio('round1_fight', ['assets/audio/sounds/round1_fight.wav']);
     }
 
     create(game) {
+        this.game = game;
+
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.add.tileSprite(0, 0, this.width, this.height, 'starfield');
         this.gameEngine = new GameEngine();
@@ -30,6 +36,12 @@ class BreakOutFighters {
         //  We check bounds collisions against all walls other than the bottom one
         game.physics.arcade.checkCollision.down = false;
         game.input.onDown.add(this.releaseBall, this);
+
+        this.music = game.add.audio('mai');
+        game.block = game.add.audio('block');
+        game.hit = game.add.audio('hit');
+        game.round1_fight = game.add.audio('round1_fight');
+        this.game.round1_fight.play();
     }
 
     update(game) {
@@ -39,6 +51,7 @@ class BreakOutFighters {
 
     releaseBall() {
         if (this.gameEngine.ballOnPaddle) {
+            this.music.play();
             this.gameEngine.ballOnPaddle = false;
             this.ball.release();
             this.hud.hideIntroText();
@@ -65,6 +78,7 @@ class BreakOutFighters {
 
     ballHitBrick(_ball, brickSprite) {
 
+        this.game.hit.play();
         brickSprite.kill();
 
         this.gameEngine.onBallHitBrick();
@@ -88,5 +102,6 @@ class BreakOutFighters {
 
     }
 
-
 }
+
+module.exports = BreakOutFighters;

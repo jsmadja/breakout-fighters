@@ -52,6 +52,7 @@ class Ball {
     }
 
     static ballHitPaddle(ballSprite, paddleSprite) {
+        this.game.block.play();
         let diff = 0;
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle
@@ -72,3 +73,5 @@ class Ball {
 
 
 }
+
+module.exports = Ball;

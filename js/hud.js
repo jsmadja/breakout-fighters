@@ -9,6 +9,9 @@ class HUD {
             align: "center"
         });
         this.introText.anchor.setTo(0.5, 0.5);
+
+        this.scoreText.visible = false;
+        this.livesText.visible = false;
     }
 
     hideIntroText() {
@@ -28,3 +31,5 @@ class HUD {
     }
 
 }
+
+module.exports = HUD;

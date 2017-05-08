@@ -21,3 +21,5 @@ class GameEngine {
         this.score += 1000;
     }
 }
+
+module.exports = GameEngine;
