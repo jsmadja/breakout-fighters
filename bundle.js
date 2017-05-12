@@ -121,7 +121,7 @@ class BreakOutFighters {
 
         this.hud = new HUD(game);
 
-        this.ball = new Ball(game, this.gameEngine.onBallLost.bind(this));
+        this.ball = new Ball(game, this.gameEngine.onBallLost.bind(this.gameEngine));
 
         this.paddle = new Paddle(game);
 
