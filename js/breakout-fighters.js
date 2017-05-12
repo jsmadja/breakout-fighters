@@ -26,6 +26,7 @@ class BreakOutFighters {
 
         this.gameEngine.ball = this.ball;
         this.gameEngine.paddle = this.paddle;
+        this.gameEngine.hud = this.hud;
     }
 
     create() {
@@ -33,7 +34,10 @@ class BreakOutFighters {
         this.background.create(this.width, this.height);
         this.paddle.create();
         this.ball.create();
-        this.ball.resetOnPaddle(this.paddle);
+        this.paddle.reset(this.ball);
+        this.hud.create();
+
+        this.paddle.onBallHitPaddle = this.gameEngine.onBallHitPlayer.bind(this.gameEngine);
     }
 
     update() {

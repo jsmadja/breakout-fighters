@@ -2,6 +2,7 @@ class Paddle {
 
     constructor(game) {
         this.game = game;
+        this.ballOnPaddle = true;
     }
 
     create() {
@@ -35,14 +36,50 @@ class Paddle {
         this.sprite.y = y;
     }
 
-    update() {
+    release(ball) {
+        if (this.ballOnPaddle) {
+            this.ballOnPaddle = false;
+            ball.release();
+        }
+    }
+
+    reset(ball) {
+        this.ballOnPaddle = true;
+        const x = this.body.x + 16;
+        const y = this.y - 10;
+        ball.resetAt(x, y);
+    }
+
+    update(ball) {
         this.x = this.game.input.x;
         if (this.x < 24) {
             this.x = 24;
         } else if (this.x > this.game.width - 24) {
             this.x = this.game.width - 24;
         }
-
+        if (this.ballOnPaddle) {
+            ball.setX(this.x);
+        } else {
+            this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
+        }
     }
+
+    static reflect(ballSprite, paddleSprite) {
+        let diff = 0;
+        if (ballSprite.x < paddleSprite.x) {
+            //  Ball is on the left-hand side of the paddle
+            diff = paddleSprite.x - ballSprite.x;
+            ballSprite.body.velocity.x = (-10 * diff);
+        } else if (ballSprite.x > paddleSprite.x) {
+            //  Ball is on the right-hand side of the paddle
+            diff = ballSprite.x - paddleSprite.x;
+            ballSprite.body.velocity.x = (10 * diff);
+        } else {
+            //  Ball is perfectly in the middle
+            //  Add a little random X to stop it bouncing straight up!
+            ballSprite.body.velocity.x = 2 + Math.random() * 8;
+        }
+    }
+
 }
 module.exports = Paddle;
