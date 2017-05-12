@@ -1,8 +1,12 @@
 class Ball {
 
-    constructor(game, x, y, ballLost) {
+    constructor(game, onOutOfBounds) {
         this.game = game;
-        this.sprite = game.add.sprite(x, y, 'breakout', 'ball_1.png');
+        this.onOutOfBounds = onOutOfBounds;
+    }
+
+    create() {
+        this.sprite = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
         this.sprite.anchor.set(0.5);
         this.sprite.checkWorldBounds = true;
 
@@ -10,8 +14,7 @@ class Ball {
 
         this.sprite.body.collideWorldBounds = true;
         this.sprite.body.bounce.set(1);
-        this.sprite.animations.add('spin', ['ball_1.png', 'ball_2.png', 'ball_3.png', 'ball_4.png', 'ball_5.png'], 50, true, false);
-        this.sprite.events.onOutOfBounds.add(ballLost, this);
+        this.sprite.events.onOutOfBounds.add(this.onOutOfBounds, this);
     }
 
     collideWithPaddle(paddle) {
@@ -32,7 +35,10 @@ class Ball {
         this.sprite.animations.play('spin');
     }
 
-    reset(x, y) {
+    resetOnPaddle(paddle) {
+        const x = paddle.body.x + 16;
+        const y = paddle.y - 10;
+
         this.sprite.body.velocity.set(0);
         this.sprite.reset(x, y);
         this.sprite.animations.stop();
@@ -42,17 +48,15 @@ class Ball {
         this.sprite.body.velocity.setTo(0, 0);
     }
 
-    update(ballOnPaddle, paddle, bricks, ballHitBrick) {
+    update(ballOnPaddle, paddle) {
         if (ballOnPaddle) {
             this.setX(paddle.x);
         } else {
             this.collideWithPaddle(paddle.sprite);
-            this.collideWithBrick(bricks.group, ballHitBrick);
         }
     }
 
     static ballHitPaddle(ballSprite, paddleSprite) {
-        this.game.block.play();
         let diff = 0;
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle

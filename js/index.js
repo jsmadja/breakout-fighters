@@ -5,7 +5,7 @@ const BreakOutFighters = require('./breakout-fighters');
 const breakOutFighters = new BreakOutFighters(WIDTH, HEIGHT);
 
 new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
-    preload: breakOutFighters.preload,
+    preload: breakOutFighters.preload.bind(breakOutFighters),
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 });
