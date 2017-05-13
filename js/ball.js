@@ -1,8 +1,7 @@
 class Ball {
 
-    constructor(game, onOutOfBounds) {
+    constructor(game) {
         this.game = game;
-        this.onOutOfBounds = onOutOfBounds;
     }
 
     create() {

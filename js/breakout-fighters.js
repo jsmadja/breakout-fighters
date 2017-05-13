@@ -19,9 +19,7 @@ class BreakOutFighters {
         this.background.preload();
 
         this.hud = new HUD(game);
-
-        this.ball = new Ball(game, this.gameEngine.onBallLost.bind(this.gameEngine));
-
+        this.ball = new Ball(game);
         this.paddle = new Paddle(game);
 
         this.gameEngine.ball = this.ball;
@@ -36,8 +34,6 @@ class BreakOutFighters {
         this.ball.create();
         this.paddle.reset(this.ball);
         this.hud.create();
-
-        this.paddle.onBallHitPaddle = this.gameEngine.onBallHitPlayer.bind(this.gameEngine);
     }
 
     update() {

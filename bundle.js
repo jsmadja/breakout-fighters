@@ -19,9 +19,8 @@ module.exports = Background;
 },{}],2:[function(require,module,exports){
 class Ball {
 
-    constructor(game, onOutOfBounds) {
+    constructor(game) {
         this.game = game;
-        this.onOutOfBounds = onOutOfBounds;
     }
 
     create() {
@@ -80,9 +79,7 @@ class BreakOutFighters {
         this.background.preload();
 
         this.hud = new HUD(game);
-
-        this.ball = new Ball(game, this.gameEngine.onBallLost.bind(this.gameEngine));
-
+        this.ball = new Ball(game);
         this.paddle = new Paddle(game);
 
         this.gameEngine.ball = this.ball;
@@ -97,8 +94,6 @@ class BreakOutFighters {
         this.ball.create();
         this.paddle.reset(this.ball);
         this.hud.create();
-
-        this.paddle.onBallHitPaddle = this.gameEngine.onBallHitPlayer.bind(this.gameEngine);
     }
 
     update() {
@@ -236,6 +231,24 @@ class GameEngine {
 
     playerHasInputedJustDefend() {
         return this.downDirection.isDown && this.downDirection.duration < 100 && !this.paddle.ballOnPaddle;
+    }
+
+    set paddle(paddle) {
+        this._paddle = paddle;
+        this._paddle.onBallHitPaddle = this.onBallHitPlayer.bind(this);
+    }
+
+    get paddle() {
+        return this._paddle;
+    }
+
+    set ball(ball) {
+        this._ball = ball;
+        this.ball.onOutOfBounds = this.onBallLost.bind(this);
+    }
+
+    get ball() {
+        return this._ball;
     }
 
 }

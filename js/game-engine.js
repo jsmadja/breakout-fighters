@@ -71,6 +71,24 @@ class GameEngine {
         return this.downDirection.isDown && this.downDirection.duration < 100 && !this.paddle.ballOnPaddle;
     }
 
+    set paddle(paddle) {
+        this._paddle = paddle;
+        this._paddle.onBallHitPaddle = this.onBallHitPlayer.bind(this);
+    }
+
+    get paddle() {
+        return this._paddle;
+    }
+
+    set ball(ball) {
+        this._ball = ball;
+        this.ball.onOutOfBounds = this.onBallLost.bind(this);
+    }
+
+    get ball() {
+        return this._ball;
+    }
+
 }
 
 module.exports = GameEngine;
