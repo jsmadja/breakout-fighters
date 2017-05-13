@@ -2,15 +2,31 @@
 
 {
 	"filename": "ball.png",
-	"frame": {"x":43,"y":1,"w":10,"h":10},
+	"frame": {"x":142,"y":1,"w":10,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":10},
 	"sourceSize": {"w":10,"h":10}
 },
 {
-	"filename": "paddle.png",
+	"filename": "damaged/1.png",
 	"frame": {"x":1,"y":1,"w":40,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":10},
+	"sourceSize": {"w":40,"h":10}
+},
+{
+	"filename": "just_defend/1.png",
+	"frame": {"x":48,"y":1,"w":40,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":10},
+	"sourceSize": {"w":40,"h":10}
+},
+{
+	"filename": "paddle.png",
+	"frame": {"x":95,"y":1,"w":40,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":40,"h":10},
@@ -21,8 +37,8 @@
 	"version": "1.0",
 	"image": "sprite.png",
 	"format": "RGBA8888",
-	"size": {"w":54,"h":12},
+	"size": {"w":153,"h":12},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:e5be1649f2a1277fbd1324fa7513168e:5ac0c9b625a6f182b6b69e63d0429a54:68d88b3cf7eafc9b5accfffdfb2fda91$"
+	"smartupdate": "$TexturePacker:SmartUpdate:c0d3560289172a9e5d8df3b04095dffb:33f5e68f32b0696f13412f6f7c453260:68d88b3cf7eafc9b5accfffdfb2fda91$"
 }
 }

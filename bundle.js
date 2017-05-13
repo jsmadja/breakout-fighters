@@ -108,12 +108,37 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":5,"./hud":6,"./paddle":8}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":6,"./hud":7,"./paddle":10}],4:[function(require,module,exports){
+class Controls {
+
+    static get buttons() {
+        return {
+            A: Phaser.KeyCode.A,
+            B: Phaser.KeyCode.Z,
+            C: Phaser.KeyCode.E,
+            D: Phaser.KeyCode.R,
+            START: Phaser.Keyboard.SPACEBAR,
+        };
+    }
+
+    static get joystick() {
+        return {
+            LEFT: Phaser.Keyboard.LEFT,
+            RIGHT: Phaser.Keyboard.RIGHT,
+            DOWN: Phaser.Keyboard.DOWN,
+        };
+    }
+}
+
+module.exports = Controls;
+},{}],5:[function(require,module,exports){
 const MAX_LIFE = 100;
+const JUST_DEFEND_TIMING = 200;
 
 class Player {
     constructor() {
         this.restoreFullLife();
+        this.justDefending = false;
     }
 
     receiveNormalDamage() {
@@ -127,11 +152,21 @@ class Player {
     isKO() {
         return this.life <= 0;
     }
+
+    justDefend() {
+        if (!this.justDefending) {
+            this.justDefending = true;
+            setTimeout(() => {
+                this.justDefending = false;
+            }, JUST_DEFEND_TIMING);
+        }
+    }
 }
 
 module.exports = Player;
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const Player = require('./domain/player');
+const Controls = require('./controls');
 
 class GameEngine {
     constructor(game) {
@@ -147,7 +182,10 @@ class GameEngine {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
-        this.game.input.onDown.add(() => this.paddle.release(this.ball), this);
+        this.startButton = this.game.input.keyboard.addKey(Controls.buttons.START);
+        this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
+        this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
+        this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
     }
 
     onBallLost() {
@@ -157,41 +195,97 @@ class GameEngine {
     }
 
     onBallHitPlayer() {
-        this.onPlayerReceiveNormalDamage();
-        if(this.player.isKO()) {
+        if (this.player.justDefending) {
+            this.onPlayerJustDefended();
+        } else {
+            this.onPlayerReceiveNormalDamage();
+        }
+        if (this.player.isKO()) {
             this.onBallLost();
         }
     }
 
+    onPlayerJustDefended() {
+        this.hud.justDefendUIComponent.show();
+        this.paddle.justDefendStance();
+        setTimeout(() => this.paddle.normalStance(), 100);
+    }
+
     onPlayerReceiveNormalDamage() {
         this.player.receiveNormalDamage();
+        this.paddle.damagedStance();
+        setTimeout(() => this.paddle.normalStance(), 100);
         this.hud.lifeUIComponent.update(this.player.life);
     }
 
     update() {
+        if (this.startButton.isDown) {
+            this.paddle.release(this.ball);
+        }
+        if (this.leftDirection.isDown) {
+            this.paddle.moveLeft();
+        }
+        if (this.rightDirection.isDown) {
+            this.paddle.moveRight();
+        }
+        if (this.playerHasInputedJustDefend()) {
+            this.player.justDefend();
+        }
         this.paddle.update(this.ball);
+    }
+
+    playerHasInputedJustDefend() {
+        return this.downDirection.isDown && this.downDirection.duration < 100 && !this.paddle.ballOnPaddle;
     }
 
 }
 
 module.exports = GameEngine;
-},{"./domain/player":4}],6:[function(require,module,exports){
+},{"./controls":4,"./domain/player":5}],7:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-ui-component');
+const JustDefendUIComponent = require('./hud/components/just-defend-component');
 
 class HUD {
 
     constructor(game) {
         this.lifeUIComponent = new LifeUIComponent(game);
+        this.justDefendUIComponent = new JustDefendUIComponent(game);
     }
 
     create() {
         this.lifeUIComponent.create();
+        this.justDefendUIComponent.create();
     }
 
 }
 
 module.exports = HUD;
-},{"./hud/components/life-ui-component":7}],7:[function(require,module,exports){
+},{"./hud/components/just-defend-component":8,"./hud/components/life-ui-component":9}],8:[function(require,module,exports){
+class JustDefendUIComponent {
+
+    constructor(game) {
+        this.game = game;
+    }
+
+    create() {
+        this.component = this.game.add.text(10, 60, 'Just Defend !', {
+            font: '20px Courrier',
+            fill: '#FFFF00',
+            align: 'left'
+        });
+        this.component.visible = false;
+    }
+
+    show() {
+        this.component.visible = true;
+        setTimeout(() => {
+            this.component.visible = false;
+        }, 1000);
+    }
+
+}
+module.exports = JustDefendUIComponent;
+},{}],9:[function(require,module,exports){
 class LifeUIComponent {
 
     constructor(game) {
@@ -207,12 +301,13 @@ class LifeUIComponent {
     }
 }
 module.exports = LifeUIComponent;
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
         this.game = game;
         this.ballOnPaddle = true;
+        this.speed = 7;
     }
 
     create() {
@@ -224,6 +319,9 @@ class Paddle {
         this.sprite.body.collideWorldBounds = true;
         this.sprite.body.bounce.set(1);
         this.sprite.body.immovable = true;
+
+        this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
+        this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
     }
 
     get x() {
@@ -261,12 +359,6 @@ class Paddle {
     }
 
     update(ball) {
-        this.x = this.game.input.x;
-        if (this.x < 24) {
-            this.x = 24;
-        } else if (this.x > this.game.width - 24) {
-            this.x = this.game.width - 24;
-        }
         if (this.ballOnPaddle) {
             ball.setX(this.x);
         } else {
@@ -274,7 +366,7 @@ class Paddle {
         }
     }
 
-    static reflect(ballSprite, paddleSprite) {
+    static reflect(paddleSprite, ballSprite) {
         let diff = 0;
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle
@@ -291,9 +383,45 @@ class Paddle {
         }
     }
 
+    moveLeft() {
+        if (this.canMoveLeft()) {
+            this.x -= this.speed;
+        }
+    }
+
+    canMoveLeft() {
+        return (this.x - this.speed - (this.getWidth() / 2)) >= 0;
+    }
+
+    moveRight() {
+        if (this.canMoveRight()) {
+            this.x += this.speed;
+        }
+    }
+
+    canMoveRight() {
+        return (this.x + this.speed + (this.getWidth() / 2)) <= (this.game.width);
+    }
+
+    getWidth() {
+        return this.sprite.body.width;
+    }
+
+    justDefendStance() {
+        this.sprite.animations.play('just_defend');
+    }
+
+    damagedStance() {
+        this.sprite.animations.play('damage');
+    }
+
+    normalStance() {
+        this.sprite.frameName = 'paddle.png';
+    }
+
 }
 module.exports = Paddle;
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -305,4 +433,4 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 });
-},{"./breakout-fighters":3}]},{},[9]);
+},{"./breakout-fighters":3}]},{},[11]);

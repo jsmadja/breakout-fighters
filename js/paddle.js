@@ -3,6 +3,7 @@ class Paddle {
     constructor(game) {
         this.game = game;
         this.ballOnPaddle = true;
+        this.speed = 7;
     }
 
     create() {
@@ -14,6 +15,9 @@ class Paddle {
         this.sprite.body.collideWorldBounds = true;
         this.sprite.body.bounce.set(1);
         this.sprite.body.immovable = true;
+
+        this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
+        this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
     }
 
     get x() {
@@ -51,12 +55,6 @@ class Paddle {
     }
 
     update(ball) {
-        this.x = this.game.input.x;
-        if (this.x < 24) {
-            this.x = 24;
-        } else if (this.x > this.game.width - 24) {
-            this.x = this.game.width - 24;
-        }
         if (this.ballOnPaddle) {
             ball.setX(this.x);
         } else {
@@ -64,7 +62,7 @@ class Paddle {
         }
     }
 
-    static reflect(ballSprite, paddleSprite) {
+    static reflect(paddleSprite, ballSprite) {
         let diff = 0;
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle
@@ -79,6 +77,42 @@ class Paddle {
             //  Add a little random X to stop it bouncing straight up!
             ballSprite.body.velocity.x = 2 + Math.random() * 8;
         }
+    }
+
+    moveLeft() {
+        if (this.canMoveLeft()) {
+            this.x -= this.speed;
+        }
+    }
+
+    canMoveLeft() {
+        return (this.x - this.speed - (this.getWidth() / 2)) >= 0;
+    }
+
+    moveRight() {
+        if (this.canMoveRight()) {
+            this.x += this.speed;
+        }
+    }
+
+    canMoveRight() {
+        return (this.x + this.speed + (this.getWidth() / 2)) <= (this.game.width);
+    }
+
+    getWidth() {
+        return this.sprite.body.width;
+    }
+
+    justDefendStance() {
+        this.sprite.animations.play('just_defend');
+    }
+
+    damagedStance() {
+        this.sprite.animations.play('damage');
+    }
+
+    normalStance() {
+        this.sprite.frameName = 'paddle.png';
     }
 
 }
