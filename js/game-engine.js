@@ -3,6 +3,11 @@ const Controls = require('./controls');
 const Bricks = require('./bricks');
 const HUD = require('./hud');
 const Ball = require('./ball');
+const _ = require('lodash');
+const SpecialMoves = require('./special-moves');
+
+const SPECIAL_MOVE_POWER_BONUS = 10;
+const NORMAL_MOVE_POWER_BONUS = 1;
 
 class GameEngine {
     constructor(game) {
@@ -11,6 +16,7 @@ class GameEngine {
         this.bricks = new Bricks(game);
         this.bricks.onBallHitBrick = this.onPlayerHitBrick.bind(this);
         this.hud = new HUD(game);
+        this.control_history = [];
     }
 
     preload() {
@@ -64,7 +70,11 @@ class GameEngine {
 
     onPlayerHitBrick(brick) {
         if (this.ball.type === brick.type) {
-            this.player.power++;
+            if (this.player.specialMoving) {
+                this.player.power += SPECIAL_MOVE_POWER_BONUS;
+            } else {
+                this.player.power += NORMAL_MOVE_POWER_BONUS;
+            }
             this.player.rush++;
             this.hud.powerUIComponent.update(this.player.power);
         } else {
@@ -91,30 +101,65 @@ class GameEngine {
     update() {
         if (this.aButton.isDown) {
             this.ball.type = Ball.Type.A;
+            this.insertInputHistory(Controls.buttons.A);
         }
         if (this.bButton.isDown) {
             this.ball.type = Ball.Type.B;
+            this.insertInputHistory(Controls.buttons.B);
         }
         if (this.cButton.isDown) {
             this.ball.type = Ball.Type.C;
+            this.insertInputHistory(Controls.buttons.C);
         }
         if (this.dButton.isDown) {
             this.ball.type = Ball.Type.D;
+            this.insertInputHistory(Controls.buttons.D);
         }
         if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
+            this.detectSpecialMove();
             this.paddle.release(this.ball);
         }
         if (this.leftDirection.isDown) {
             this.paddle.moveLeft();
+            this.insertInputHistory(Controls.joystick.LEFT);
         }
         if (this.rightDirection.isDown) {
             this.paddle.moveRight();
+            this.insertInputHistory(Controls.joystick.RIGHT);
         }
+        if (this.downDirection.isDown) {
+            this.insertInputHistory(Controls.joystick.DOWN);
+        }
+
+        if (this.rightDirection.isDown && this.downDirection.isDown) {
+            this.insertInputHistory(Controls.joystick.DOWN_RIGHT);
+        }
+        if (this.leftDirection.isDown && this.downDirection.isDown) {
+            this.insertInputHistory(Controls.joystick.DOWN_LEFT);
+        }
+
         if (this.playerHasInputedJustDefend()) {
             this.player.justDefend();
         }
         this.paddle.update(this.ball);
         this.bricks.update(this.ball);
+    }
+
+    detectSpecialMove() {
+        const now = new Date().getTime();
+        const history = _(this.control_history).filter(input => (now - input.date) < 1000).map(input => input.input).value();
+        if (SpecialMoves.isSpecialMove(history)) {
+            this.control_history = [];
+            this.player.doSpecialMove();
+        }
+    }
+
+    insertInputHistory(input) {
+        if (input !== this.last_input) {
+            this.control_history.push({ input, date: new Date().getTime() });
+        }
+        this.last_input = input;
+        this.control_history = _.takeRight(this.control_history, 10);
     }
 
     playerHasInputedJustDefend() {

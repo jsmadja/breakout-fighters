@@ -15,6 +15,8 @@ class Controls {
             LEFT: Phaser.Keyboard.LEFT,
             RIGHT: Phaser.Keyboard.RIGHT,
             DOWN: Phaser.Keyboard.DOWN,
+            DOWN_RIGHT: 'DOWN_RIGHT',
+            DOWN_LEFT: 'DOWN_LEFT',
         };
     }
 }

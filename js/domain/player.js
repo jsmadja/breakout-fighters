@@ -1,5 +1,6 @@
 const MAX_LIFE = 100;
 const JUST_DEFEND_TIMING = 200;
+const SPECIAL_MOVE_TIMING = 500;
 const NORMAL_DAMAGE = 1;
 
 class Player {
@@ -33,6 +34,13 @@ class Player {
                 this.justDefending = false;
             }, JUST_DEFEND_TIMING);
         }
+    }
+
+    doSpecialMove() {
+        this.specialMoving = true;
+        setTimeout(() => {
+            this.specialMoving = false;
+        }, SPECIAL_MOVE_TIMING);
     }
 }
 
