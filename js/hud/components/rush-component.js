@@ -5,10 +5,9 @@ class RushUIComponent {
     }
 
     create() {
-        this.component = this.game.add.text(10, 40, 'Rush', {
+        this.component = this.game.add.text(10, 20, 'Rush', {
             font: '10px Courrier',
             fill: '#FF00FF',
-            align: 'left'
         });
         this.component.visible = false;
     }

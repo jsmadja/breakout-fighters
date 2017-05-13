@@ -14,11 +14,17 @@ class HUD {
     }
 
     create(player, bricks) {
-        this.playerLifeUIComponent.create(10, 10, player.life);
-        this.levelLifeUIComponent.create(200, 10, bricks.count());
-        this.powerUIComponent.create(10, 200);
+        this.playerLifeUIComponent.create(0, 10, player.life);
+        this.levelLifeUIComponent.create(190, 10, bricks.life, true);
+        this.powerUIComponent.create(10, 210);
         this.justDefendUIComponent.create();
         this.rushUIComponent.create();
+    }
+
+    preload() {
+        this.powerUIComponent.preload();
+        this.playerLifeUIComponent.preload();
+        this.levelLifeUIComponent.preload();
     }
 
 }

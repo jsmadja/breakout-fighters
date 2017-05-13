@@ -156,7 +156,7 @@ class Brick {
     }
 
     static reflect(_ball, _brick) {
-        if(_ball.type === _brick.type) {
+        if (_ball.type === _brick.type) {
             _brick.kill();
         }
         this.collidedBrick = _brick;
@@ -164,7 +164,7 @@ class Brick {
 }
 
 const START_X = 3;
-const START_Y = 30;
+const START_Y = 40;
 const BRICK_WIDTH = 20;
 const BRICK_HEIGHT = 10;
 
@@ -206,10 +206,15 @@ class Bricks {
             });
             y += BRICK_HEIGHT + 1;
         });
+        this.total = this.count();
     }
 
     count() {
         return this.group.countLiving();
+    }
+
+    get life() {
+        return 100 * (this.count() / this.total);
     }
 
 }
@@ -313,6 +318,7 @@ class GameEngine {
     preload() {
         this.game.load.atlas('sprites', 'assets/sprites/sprite.png', 'assets/sprites/sprite.json');
         this.game.load.text('level_1', '../assets/levels/level_1/wall.data');
+        this.hud.preload();
     }
 
     create() {
@@ -345,7 +351,7 @@ class GameEngine {
         this.player.reset();
         this.bricks.reset();
         this.hud.playerLifeUIComponent.update(this.player.life);
-        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.levelLifeUIComponent.update(this.bricks.life);
     }
 
     onBallHitPlayer() {
@@ -372,7 +378,7 @@ class GameEngine {
             this.player.rush = 0;
         }
         this.ball.type = Ball.Type.NEUTRAL;
-        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.levelLifeUIComponent.update(this.bricks.life);
         this.hud.rushUIComponent.update(this.player.rush);
     }
 
@@ -495,11 +501,17 @@ class HUD {
     }
 
     create(player, bricks) {
-        this.playerLifeUIComponent.create(10, 10, player.life);
-        this.levelLifeUIComponent.create(200, 10, bricks.count());
-        this.powerUIComponent.create(10, 200);
+        this.playerLifeUIComponent.create(0, 10, player.life);
+        this.levelLifeUIComponent.create(190, 10, bricks.life, true);
+        this.powerUIComponent.create(10, 210);
         this.justDefendUIComponent.create();
         this.rushUIComponent.create();
+    }
+
+    preload() {
+        this.powerUIComponent.preload();
+        this.playerLifeUIComponent.preload();
+        this.levelLifeUIComponent.preload();
     }
 
 }
@@ -514,9 +526,8 @@ class JustDefendUIComponent {
 
     create() {
         this.component = this.game.add.text(10, 30, 'Just Defend !', {
-            font: '20px Courrier',
+            font: '10px Courrier',
             fill: '#FFFF00',
-            align: 'left'
         });
         this.component.visible = false;
     }
@@ -531,22 +542,32 @@ class JustDefendUIComponent {
 }
 module.exports = JustDefendUIComponent;
 },{}],10:[function(require,module,exports){
+const SCALE_FACTOR = 1.3;
+
 class LifeUIComponent {
 
     constructor(game) {
         this.game = game;
     }
 
-    create(x, y, initialLife) {
-        this.component = this.game.add.text(x, y, `life: ${initialLife}`, {
-            font: '20px Courrier',
-            fill: '#00FF00',
-            align: 'left'
-        });
+    preload() {
+        this.game.load.image('life', 'assets/sprites/life.png');
+    }
+
+    create(x, y, initialLife, invert) {
+        this.sprite = this.game.add.sprite(x, y, 'life');
+        if (invert) {
+            this.sprite.scale.x = SCALE_FACTOR;
+        } else {
+            this.sprite.x += this.sprite.width * SCALE_FACTOR;
+            this.sprite.scale.x = -SCALE_FACTOR;
+        }
+        this.sprite.crop(new Phaser.Rectangle(0, 0, initialLife, 10));
     }
 
     update(life) {
-        this.component.text = `life: ${life}`;
+        this.sprite.cropRect.width = life;
+        this.sprite.updateCrop();
     }
 }
 module.exports = LifeUIComponent;
@@ -557,16 +578,22 @@ class PowerUIComponent {
         this.game = game;
     }
 
+    preload() {
+        this.game.load.image('power', 'assets/sprites/power.png');
+    }
+
     create(x, y) {
-        this.component = this.game.add.text(x, y, `power: 0`, {
+        this.component = this.game.add.text(x, y, 'POW', {
             font: '10px Courrier',
             fill: '#00FF00',
-            align: 'left'
         });
+        this.sprite = this.game.add.sprite(x + 30, y, 'power');
+        this.sprite.crop(new Phaser.Rectangle(0, 0, 0, 10));
     }
 
     update(power) {
-        this.component.text = `power: ${power}`;
+        this.sprite.cropRect.width = power;
+        this.sprite.updateCrop();
     }
 }
 module.exports = PowerUIComponent;
@@ -578,10 +605,9 @@ class RushUIComponent {
     }
 
     create() {
-        this.component = this.game.add.text(10, 40, 'Rush', {
+        this.component = this.game.add.text(10, 20, 'Rush', {
             font: '10px Courrier',
             fill: '#FF00FF',
-            align: 'left'
         });
         this.component.visible = false;
     }

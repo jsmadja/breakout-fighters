@@ -22,6 +22,7 @@ class GameEngine {
     preload() {
         this.game.load.atlas('sprites', 'assets/sprites/sprite.png', 'assets/sprites/sprite.json');
         this.game.load.text('level_1', '../assets/levels/level_1/wall.data');
+        this.hud.preload();
     }
 
     create() {
@@ -54,7 +55,7 @@ class GameEngine {
         this.player.reset();
         this.bricks.reset();
         this.hud.playerLifeUIComponent.update(this.player.life);
-        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.levelLifeUIComponent.update(this.bricks.life);
     }
 
     onBallHitPlayer() {
@@ -81,7 +82,7 @@ class GameEngine {
             this.player.rush = 0;
         }
         this.ball.type = Ball.Type.NEUTRAL;
-        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.levelLifeUIComponent.update(this.bricks.life);
         this.hud.rushUIComponent.update(this.player.rush);
     }
 

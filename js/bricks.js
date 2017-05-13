@@ -7,7 +7,7 @@ class Brick {
     }
 
     static reflect(_ball, _brick) {
-        if(_ball.type === _brick.type) {
+        if (_ball.type === _brick.type) {
             _brick.kill();
         }
         this.collidedBrick = _brick;
@@ -15,7 +15,7 @@ class Brick {
 }
 
 const START_X = 3;
-const START_Y = 30;
+const START_Y = 40;
 const BRICK_WIDTH = 20;
 const BRICK_HEIGHT = 10;
 
@@ -57,10 +57,15 @@ class Bricks {
             });
             y += BRICK_HEIGHT + 1;
         });
+        this.total = this.count();
     }
 
     count() {
         return this.group.countLiving();
+    }
+
+    get life() {
+        return 100 * (this.count() / this.total);
     }
 
 }
