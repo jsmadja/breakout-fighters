@@ -281,7 +281,7 @@ class JustDefendUIComponent {
     }
 
     create() {
-        this.component = this.game.add.text(10, 60, 'Just Defend !', {
+        this.component = this.game.add.text(10, 30, 'Just Defend !', {
             font: '20px Courrier',
             fill: '#FFFF00',
             align: 'left'
