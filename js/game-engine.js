@@ -64,7 +64,9 @@ class GameEngine {
 
     onPlayerHitBrick(brick) {
         if (this.ball.type === brick.type) {
+            this.player.power++;
             this.player.rush++;
+            this.hud.powerUIComponent.update(this.player.power);
         } else {
             this.player.rush = 0;
         }

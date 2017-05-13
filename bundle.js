@@ -146,7 +146,7 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":12}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":13}],4:[function(require,module,exports){
 class Brick {
     constructor(group, type, x, y) {
         const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
@@ -245,6 +245,7 @@ const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
+        this.power = 0;
         this.reset();
     }
 
@@ -344,7 +345,9 @@ class GameEngine {
 
     onPlayerHitBrick(brick) {
         if (this.ball.type === brick.type) {
+            this.player.power++;
             this.player.rush++;
+            this.hud.powerUIComponent.update(this.player.power);
         } else {
             this.player.rush = 0;
         }
@@ -421,9 +424,10 @@ class GameEngine {
 
 module.exports = GameEngine;
 },{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8}],8:[function(require,module,exports){
-const LifeUIComponent = require('./hud/components/life-ui-component');
+const LifeUIComponent = require('./hud/components/life-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
 const RushUIComponent = require('./hud/components/rush-component');
+const PowerUIComponent = require('./hud/components/power-component');
 
 class HUD {
 
@@ -432,11 +436,13 @@ class HUD {
         this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
         this.rushUIComponent = new RushUIComponent(game);
+        this.powerUIComponent = new PowerUIComponent(game);
     }
 
     create(player, bricks) {
         this.playerLifeUIComponent.create(10, 10, player.life);
         this.levelLifeUIComponent.create(200, 10, bricks.count());
+        this.powerUIComponent.create(10, 200);
         this.justDefendUIComponent.create();
         this.rushUIComponent.create();
     }
@@ -444,7 +450,7 @@ class HUD {
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":9,"./hud/components/life-ui-component":10,"./hud/components/rush-component":11}],9:[function(require,module,exports){
+},{"./hud/components/just-defend-component":9,"./hud/components/life-component":10,"./hud/components/power-component":11,"./hud/components/rush-component":12}],9:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -490,6 +496,26 @@ class LifeUIComponent {
 }
 module.exports = LifeUIComponent;
 },{}],11:[function(require,module,exports){
+class PowerUIComponent {
+
+    constructor(game) {
+        this.game = game;
+    }
+
+    create(x, y) {
+        this.component = this.game.add.text(x, y, `power: 0`, {
+            font: '10px Courrier',
+            fill: '#00FF00',
+            align: 'left'
+        });
+    }
+
+    update(power) {
+        this.component.text = `power: ${power}`;
+    }
+}
+module.exports = PowerUIComponent;
+},{}],12:[function(require,module,exports){
 class RushUIComponent {
 
     constructor(game) {
@@ -518,7 +544,7 @@ class RushUIComponent {
 
 }
 module.exports = RushUIComponent;
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -638,7 +664,7 @@ class Paddle {
 
 }
 module.exports = Paddle;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -652,4 +678,4 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 }, transparent, antialias);
-},{"./breakout-fighters":3}]},{},[13]);
+},{"./breakout-fighters":3}]},{},[14]);

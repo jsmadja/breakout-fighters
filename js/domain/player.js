@@ -4,6 +4,7 @@ const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
+        this.power = 0;
         this.reset();
     }
 
