@@ -10,7 +10,7 @@ class Background {
     }
 
     create(width, height) {
-//        const sprite = this.game.add.tileSprite(0, 0, width, height, 'grid');
+        this.game.add.tileSprite(0, 0, width, height, 'grid');
     }
 
 }
@@ -304,20 +304,23 @@ class GameEngine {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
-        this.aButton = this.game.input.keyboard.addKey(Controls.buttons.A);
-        this.bButton = this.game.input.keyboard.addKey(Controls.buttons.B);
-        this.cButton = this.game.input.keyboard.addKey(Controls.buttons.C);
-        this.dButton = this.game.input.keyboard.addKey(Controls.buttons.D);
-        this.startButton = this.game.input.keyboard.addKey(Controls.buttons.START);
-        this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
-        this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
-        this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
+        this.bindControls();
 
         const level1 = this.game.cache.getText('level_1');
         this.bricks.create();
         this.bricks.createWall(level1);
 
         this.hud.create(this.player, this.bricks);
+    }
+
+    bindControls() {
+        this.aButton = this.game.input.keyboard.addKey(Controls.buttons.A);
+        this.bButton = this.game.input.keyboard.addKey(Controls.buttons.B);
+        this.cButton = this.game.input.keyboard.addKey(Controls.buttons.C);
+        this.dButton = this.game.input.keyboard.addKey(Controls.buttons.START);
+        this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
+        this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
+        this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
     }
 
     onBallLost() {
@@ -340,7 +343,7 @@ class GameEngine {
     }
 
     onPlayerHitBrick(brick) {
-        if(this.ball.type === brick.type) {
+        if (this.ball.type === brick.type) {
             this.player.rush++;
         } else {
             this.player.rush = 0;
@@ -376,7 +379,7 @@ class GameEngine {
         if (this.dButton.isDown) {
             this.ball.type = Ball.Type.D;
         }
-        if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown ||this.dButton.isDown) {
+        if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
             this.paddle.release(this.ball);
         }
         if (this.leftDirection.isDown) {
