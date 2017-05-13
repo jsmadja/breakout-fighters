@@ -2,23 +2,47 @@
 
 {
 	"filename": "A/A.png",
-	"frame": {"x":1,"y":1,"w":20,"h":10},
+	"frame": {"x":94,"y":1,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
 	"sourceSize": {"w":20,"h":10}
+},
+{
+	"filename": "A/ball_A.png",
+	"frame": {"x":121,"y":1,"w":5,"h":5},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
+	"sourceSize": {"w":5,"h":5}
 },
 {
 	"filename": "B/B.png",
-	"frame": {"x":28,"y":1,"w":20,"h":10},
+	"frame": {"x":1,"y":16,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
 	"sourceSize": {"w":20,"h":10}
 },
 {
+	"filename": "B/ball_B.png",
+	"frame": {"x":121,"y":13,"w":5,"h":5},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
+	"sourceSize": {"w":5,"h":5}
+},
+{
 	"filename": "ball.png",
-	"frame": {"x":202,"y":1,"w":5,"h":5},
+	"frame": {"x":106,"y":18,"w":5,"h":5},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
+	"sourceSize": {"w":5,"h":5}
+},
+{
+	"filename": "C/ball_C.png",
+	"frame": {"x":82,"y":16,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
@@ -26,15 +50,23 @@
 },
 {
 	"filename": "C/C.png",
-	"frame": {"x":55,"y":1,"w":20,"h":10},
+	"frame": {"x":28,"y":16,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
 	"sourceSize": {"w":20,"h":10}
 },
 {
+	"filename": "D/ball_D.png",
+	"frame": {"x":94,"y":18,"w":5,"h":5},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
+	"sourceSize": {"w":5,"h":5}
+},
+{
 	"filename": "D/D.png",
-	"frame": {"x":82,"y":1,"w":20,"h":10},
+	"frame": {"x":55,"y":16,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
@@ -42,7 +74,7 @@
 },
 {
 	"filename": "damaged/1.png",
-	"frame": {"x":109,"y":1,"w":24,"h":8},
+	"frame": {"x":1,"y":1,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
@@ -50,7 +82,7 @@
 },
 {
 	"filename": "just_defend/1.png",
-	"frame": {"x":140,"y":1,"w":24,"h":8},
+	"frame": {"x":32,"y":1,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
@@ -58,7 +90,7 @@
 },
 {
 	"filename": "paddle.png",
-	"frame": {"x":171,"y":1,"w":24,"h":8},
+	"frame": {"x":63,"y":1,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
@@ -69,8 +101,8 @@
 	"version": "1.0",
 	"image": "sprite.png",
 	"format": "RGBA8888",
-	"size": {"w":208,"h":12},
+	"size": {"w":127,"h":27},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:28187098ce08e10bcded5f3b002c5281:480522ff171fca2dd3b899b51049c74a:68d88b3cf7eafc9b5accfffdfb2fda91$"
+	"smartupdate": "$TexturePacker:SmartUpdate:b55dbd33c547eade33cc17268e3e0558:6370a91be2afdb2469416ab09158b779:68d88b3cf7eafc9b5accfffdfb2fda91$"
 }
 }

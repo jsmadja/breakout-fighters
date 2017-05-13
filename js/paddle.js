@@ -50,13 +50,13 @@ class Paddle {
     reset(ball) {
         this.ballOnPaddle = true;
         const x = this.sprite.body.x;
-        const y = this.y - ball.height;
+        const y = this.y - (ball.height * 1.3);
         ball.resetAt(x, y);
     }
 
     update(ball) {
         if (this.ballOnPaddle) {
-            ball.setX(this.x - ball.width/2);
+            ball.setX(this.x - ball.width / 2);
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }

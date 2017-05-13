@@ -10,7 +10,7 @@ class Background {
     }
 
     create(width, height) {
-        this.game.add.tileSprite(0, 0, width, height, 'grid');
+//        const sprite = this.game.add.tileSprite(0, 0, width, height, 'grid');
     }
 
 }
@@ -28,6 +28,7 @@ class Ball {
         this.sprite = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
         this.sprite.anchor.set(0.5);
         this.sprite.checkWorldBounds = true;
+        this.type = Ball.Type.NEUTRAL;
 
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
@@ -62,6 +63,29 @@ class Ball {
 
     get width() {
         return this.sprite.body.width;
+    }
+
+    get type() {
+        return this.sprite.type;
+    }
+
+    set type(type) {
+        this.sprite.type = type;
+        if (type === Ball.Type.NEUTRAL) {
+            this.sprite.frameName = 'ball.png';
+        } else {
+            this.sprite.frameName = `${type}/ball_${type}.png`;
+        }
+    }
+
+    static get Type() {
+        return {
+            A: 'A',
+            B: 'B',
+            C: 'C',
+            D: 'D',
+            NEUTRAL: 'NEUTRAL',
+        };
     }
 }
 
@@ -101,7 +125,7 @@ class BreakOutFighters {
         this.paddle.reset(this.ball);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-        game.input.onDown.add(() => this.gofull(game), this);
+        //game.input.onDown.add(() => this.gofull(game), this);
     }
 
     gofull(game) {
@@ -122,16 +146,20 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":11}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":12}],4:[function(require,module,exports){
 class Brick {
     constructor(group, type, x, y) {
         const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
         brick.body.bounce.set(1);
         brick.body.immovable = true;
+        brick.type = type;
     }
 
     static reflect(_ball, _brick) {
-        _brick.kill();
+        if(_ball.type === _brick.type) {
+            _brick.kill();
+        }
+        this.collidedBrick = _brick;
     }
 }
 
@@ -157,7 +185,9 @@ class Bricks {
     }
 
     update(ball) {
-        this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, this.onBallHitBrick, this);
+        if (this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, null, this)) {
+            this.onBallHitBrick(this.collidedBrick);
+        }
     }
 
     reset() {
@@ -215,12 +245,17 @@ const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
-        this.restoreFullLife();
-        this.justDefending = false;
+        this.reset();
     }
 
     receiveNormalDamage() {
         this.life -= NORMAL_DAMAGE;
+    }
+
+    reset() {
+        this.restoreFullLife();
+        this.rush = 0;
+        this.justDefending = false;
     }
 
     restoreFullLife() {
@@ -247,6 +282,7 @@ const Player = require('./domain/player');
 const Controls = require('./controls');
 const Bricks = require('./bricks');
 const HUD = require('./hud');
+const Ball = require('./ball');
 
 class GameEngine {
     constructor(game) {
@@ -268,6 +304,10 @@ class GameEngine {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
+        this.aButton = this.game.input.keyboard.addKey(Controls.buttons.A);
+        this.bButton = this.game.input.keyboard.addKey(Controls.buttons.B);
+        this.cButton = this.game.input.keyboard.addKey(Controls.buttons.C);
+        this.dButton = this.game.input.keyboard.addKey(Controls.buttons.D);
         this.startButton = this.game.input.keyboard.addKey(Controls.buttons.START);
         this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
         this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
@@ -282,7 +322,7 @@ class GameEngine {
 
     onBallLost() {
         this.paddle.reset(this.ball);
-        this.player.restoreFullLife();
+        this.player.reset();
         this.bricks.reset();
         this.hud.playerLifeUIComponent.update(this.player.life);
         this.hud.levelLifeUIComponent.update(this.bricks.count());
@@ -299,8 +339,15 @@ class GameEngine {
         }
     }
 
-    onPlayerHitBrick() {
-        this.hud.levelLifeUIComponent.update(this.bricks.count() - 1);
+    onPlayerHitBrick(brick) {
+        if(this.ball.type === brick.type) {
+            this.player.rush++;
+        } else {
+            this.player.rush = 0;
+        }
+        this.ball.type = Ball.Type.NEUTRAL;
+        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.rushUIComponent.update(this.player.rush);
     }
 
     onPlayerJustDefended() {
@@ -317,7 +364,19 @@ class GameEngine {
     }
 
     update() {
-        if (this.startButton.isDown) {
+        if (this.aButton.isDown) {
+            this.ball.type = Ball.Type.A;
+        }
+        if (this.bButton.isDown) {
+            this.ball.type = Ball.Type.B;
+        }
+        if (this.cButton.isDown) {
+            this.ball.type = Ball.Type.C;
+        }
+        if (this.dButton.isDown) {
+            this.ball.type = Ball.Type.D;
+        }
+        if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown ||this.dButton.isDown) {
             this.paddle.release(this.ball);
         }
         if (this.leftDirection.isDown) {
@@ -358,9 +417,10 @@ class GameEngine {
 }
 
 module.exports = GameEngine;
-},{"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8}],8:[function(require,module,exports){
+},{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8}],8:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-ui-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
+const RushUIComponent = require('./hud/components/rush-component');
 
 class HUD {
 
@@ -368,18 +428,20 @@ class HUD {
         this.playerLifeUIComponent = new LifeUIComponent(game);
         this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
+        this.rushUIComponent = new RushUIComponent(game);
     }
 
     create(player, bricks) {
         this.playerLifeUIComponent.create(10, 10, player.life);
         this.levelLifeUIComponent.create(200, 10, bricks.count());
         this.justDefendUIComponent.create();
+        this.rushUIComponent.create();
     }
 
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":9,"./hud/components/life-ui-component":10}],9:[function(require,module,exports){
+},{"./hud/components/just-defend-component":9,"./hud/components/life-ui-component":10,"./hud/components/rush-component":11}],9:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -425,6 +487,35 @@ class LifeUIComponent {
 }
 module.exports = LifeUIComponent;
 },{}],11:[function(require,module,exports){
+class RushUIComponent {
+
+    constructor(game) {
+        this.game = game;
+    }
+
+    create() {
+        this.component = this.game.add.text(10, 40, 'Rush', {
+            font: '10px Courrier',
+            fill: '#FF00FF',
+            align: 'left'
+        });
+        this.component.visible = false;
+    }
+
+    update(rush) {
+        this.component.text = `Rush ${rush}`;
+        const visible = rush >= 2;
+        if (visible) {
+            this.component.visible = true;
+            setTimeout(() => {
+                this.component.visible = false;
+            }, 1000);
+        }
+    }
+
+}
+module.exports = RushUIComponent;
+},{}],12:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -477,13 +568,13 @@ class Paddle {
     reset(ball) {
         this.ballOnPaddle = true;
         const x = this.sprite.body.x;
-        const y = this.y - ball.height;
+        const y = this.y - (ball.height * 1.3);
         ball.resetAt(x, y);
     }
 
     update(ball) {
         if (this.ballOnPaddle) {
-            ball.setX(this.x - ball.width/2);
+            ball.setX(this.x - ball.width / 2);
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }
@@ -544,7 +635,7 @@ class Paddle {
 
 }
 module.exports = Paddle;
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -558,4 +649,4 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 }, transparent, antialias);
-},{"./breakout-fighters":3}]},{},[12]);
+},{"./breakout-fighters":3}]},{},[13]);

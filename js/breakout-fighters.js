@@ -32,7 +32,7 @@ class BreakOutFighters {
         this.paddle.reset(this.ball);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-        game.input.onDown.add(() => this.gofull(game), this);
+        //game.input.onDown.add(() => this.gofull(game), this);
     }
 
     gofull(game) {

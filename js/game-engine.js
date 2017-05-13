@@ -2,6 +2,7 @@ const Player = require('./domain/player');
 const Controls = require('./controls');
 const Bricks = require('./bricks');
 const HUD = require('./hud');
+const Ball = require('./ball');
 
 class GameEngine {
     constructor(game) {
@@ -23,6 +24,10 @@ class GameEngine {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
+        this.aButton = this.game.input.keyboard.addKey(Controls.buttons.A);
+        this.bButton = this.game.input.keyboard.addKey(Controls.buttons.B);
+        this.cButton = this.game.input.keyboard.addKey(Controls.buttons.C);
+        this.dButton = this.game.input.keyboard.addKey(Controls.buttons.D);
         this.startButton = this.game.input.keyboard.addKey(Controls.buttons.START);
         this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
         this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
@@ -37,7 +42,7 @@ class GameEngine {
 
     onBallLost() {
         this.paddle.reset(this.ball);
-        this.player.restoreFullLife();
+        this.player.reset();
         this.bricks.reset();
         this.hud.playerLifeUIComponent.update(this.player.life);
         this.hud.levelLifeUIComponent.update(this.bricks.count());
@@ -54,8 +59,15 @@ class GameEngine {
         }
     }
 
-    onPlayerHitBrick() {
-        this.hud.levelLifeUIComponent.update(this.bricks.count() - 1);
+    onPlayerHitBrick(brick) {
+        if(this.ball.type === brick.type) {
+            this.player.rush++;
+        } else {
+            this.player.rush = 0;
+        }
+        this.ball.type = Ball.Type.NEUTRAL;
+        this.hud.levelLifeUIComponent.update(this.bricks.count());
+        this.hud.rushUIComponent.update(this.player.rush);
     }
 
     onPlayerJustDefended() {
@@ -72,7 +84,19 @@ class GameEngine {
     }
 
     update() {
-        if (this.startButton.isDown) {
+        if (this.aButton.isDown) {
+            this.ball.type = Ball.Type.A;
+        }
+        if (this.bButton.isDown) {
+            this.ball.type = Ball.Type.B;
+        }
+        if (this.cButton.isDown) {
+            this.ball.type = Ball.Type.C;
+        }
+        if (this.dButton.isDown) {
+            this.ball.type = Ball.Type.D;
+        }
+        if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown ||this.dButton.isDown) {
             this.paddle.release(this.ball);
         }
         if (this.leftDirection.isDown) {

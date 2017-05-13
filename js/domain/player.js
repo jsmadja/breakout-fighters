@@ -4,12 +4,17 @@ const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
-        this.restoreFullLife();
-        this.justDefending = false;
+        this.reset();
     }
 
     receiveNormalDamage() {
         this.life -= NORMAL_DAMAGE;
+    }
+
+    reset() {
+        this.restoreFullLife();
+        this.rush = 0;
+        this.justDefending = false;
     }
 
     restoreFullLife() {

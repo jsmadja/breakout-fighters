@@ -3,10 +3,14 @@ class Brick {
         const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
         brick.body.bounce.set(1);
         brick.body.immovable = true;
+        brick.type = type;
     }
 
     static reflect(_ball, _brick) {
-        _brick.kill();
+        if(_ball.type === _brick.type) {
+            _brick.kill();
+        }
+        this.collidedBrick = _brick;
     }
 }
 
@@ -32,7 +36,9 @@ class Bricks {
     }
 
     update(ball) {
-        this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, this.onBallHitBrick, this);
+        if (this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, null, this)) {
+            this.onBallHitBrick(this.collidedBrick);
+        }
     }
 
     reset() {

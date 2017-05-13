@@ -9,6 +9,7 @@ class Ball {
         this.sprite = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
         this.sprite.anchor.set(0.5);
         this.sprite.checkWorldBounds = true;
+        this.type = Ball.Type.NEUTRAL;
 
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
@@ -43,6 +44,29 @@ class Ball {
 
     get width() {
         return this.sprite.body.width;
+    }
+
+    get type() {
+        return this.sprite.type;
+    }
+
+    set type(type) {
+        this.sprite.type = type;
+        if (type === Ball.Type.NEUTRAL) {
+            this.sprite.frameName = 'ball.png';
+        } else {
+            this.sprite.frameName = `${type}/ball_${type}.png`;
+        }
+    }
+
+    static get Type() {
+        return {
+            A: 'A',
+            B: 'B',
+            C: 'C',
+            D: 'D',
+            NEUTRAL: 'NEUTRAL',
+        };
     }
 }
 

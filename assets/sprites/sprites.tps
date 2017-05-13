@@ -212,6 +212,22 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">balls/A/ball_A.png</key>
+            <key type="filename">balls/B/ball_B.png</key>
+            <key type="filename">balls/C/ball_C.png</key>
+            <key type="filename">balls/D/ball_D.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>1,1,3,3</rect>
+                <key>scale9Paddings</key>
+                <rect>1,1,3,3</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">bricks/A/A.png</key>
             <key type="filename">bricks/B/B.png</key>
             <key type="filename">bricks/C/C.png</key>
@@ -250,6 +266,7 @@
             <filename>ball.png</filename>
             <filename>paddle</filename>
             <filename>bricks</filename>
+            <filename>balls</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
