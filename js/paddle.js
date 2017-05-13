@@ -49,14 +49,14 @@ class Paddle {
 
     reset(ball) {
         this.ballOnPaddle = true;
-        const x = this.body.x + 16;
-        const y = this.y - 10;
+        const x = this.sprite.body.x;
+        const y = this.y - ball.height;
         ball.resetAt(x, y);
     }
 
     update(ball) {
         if (this.ballOnPaddle) {
-            ball.setX(this.x);
+            ball.setX(this.x - ball.width/2);
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }
@@ -67,11 +67,11 @@ class Paddle {
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle
             diff = paddleSprite.x - ballSprite.x;
-            ballSprite.body.velocity.x = (-10 * diff);
+            ballSprite.body.velocity.x = (-8 * diff);
         } else if (ballSprite.x > paddleSprite.x) {
             //  Ball is on the right-hand side of the paddle
             diff = ballSprite.x - paddleSprite.x;
-            ballSprite.body.velocity.x = (10 * diff);
+            ballSprite.body.velocity.x = (8 * diff);
         } else {
             //  Ball is perfectly in the middle
             //  Add a little random X to stop it bouncing straight up!

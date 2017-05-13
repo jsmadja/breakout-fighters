@@ -4,8 +4,12 @@ class LifeUIComponent {
         this.game = game;
     }
 
-    create() {
-        this.component = this.game.add.text(10, 10, 'life: 100', { font: '20px Courrier', fill: '#00FF00', align: 'left' });
+    create(x, y, initialLife) {
+        this.component = this.game.add.text(x, y, `life: ${initialLife}`, {
+            font: '20px Courrier',
+            fill: '#00FF00',
+            align: 'left'
+        });
     }
 
     update(life) {

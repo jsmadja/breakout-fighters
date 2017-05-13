@@ -17,6 +17,7 @@ class Background {
 
 module.exports = Background;
 },{}],2:[function(require,module,exports){
+const speed = 0.5;
 class Ball {
 
     constructor(game) {
@@ -40,8 +41,8 @@ class Ball {
     }
 
     release() {
-        this.sprite.body.velocity.y = -300;
-        this.sprite.body.velocity.x = -75;
+        this.sprite.body.velocity.y = -300 * speed;
+        this.sprite.body.velocity.x = -75 * speed;
         this.sprite.animations.play('spin');
     }
 
@@ -54,6 +55,14 @@ class Ball {
     destroy() {
         this.sprite.body.velocity.setTo(0, 0);
     }
+
+    get height() {
+        return this.sprite.body.height;
+    }
+
+    get width() {
+        return this.sprite.body.width;
+    }
 }
 
 module.exports = Ball;
@@ -61,7 +70,6 @@ module.exports = Ball;
 const GameEngine = require('./game-engine');
 const Paddle = require('./paddle');
 const Ball = require('./ball');
-const HUD = require('./hud');
 const Background = require('./background');
 
 class BreakOutFighters {
@@ -78,22 +86,33 @@ class BreakOutFighters {
         this.background = new Background(game);
         this.background.preload();
 
-        this.hud = new HUD(game);
         this.ball = new Ball(game);
         this.paddle = new Paddle(game);
 
         this.gameEngine.ball = this.ball;
         this.gameEngine.paddle = this.paddle;
-        this.gameEngine.hud = this.hud;
     }
 
-    create() {
-        this.gameEngine.create();
+    create(game) {
         this.background.create(this.width, this.height);
+        this.gameEngine.create();
         this.paddle.create();
         this.ball.create();
         this.paddle.reset(this.ball);
-        this.hud.create();
+
+        game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+        game.input.onDown.add(() => this.gofull(game), this);
+    }
+
+    gofull(game) {
+
+        if (game.scale.isFullScreen) {
+            game.scale.stopFullScreen();
+        }
+        else {
+            game.scale.startFullScreen(false);
+        }
+
     }
 
     update() {
@@ -103,7 +122,70 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":6,"./hud":7,"./paddle":10}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":11}],4:[function(require,module,exports){
+class Brick {
+    constructor(group, type, x, y) {
+        const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
+        brick.body.bounce.set(1);
+        brick.body.immovable = true;
+    }
+
+    static reflect(_ball, _brick) {
+        _brick.kill();
+    }
+}
+
+const START_X = 3;
+const START_Y = 30;
+const BRICK_WIDTH = 20;
+const BRICK_HEIGHT = 10;
+
+class Bricks {
+
+    constructor(game) {
+        this.game = game;
+    }
+
+    create() {
+        this.group = this.game.add.group();
+        this.group.enableBody = true;
+        this.group.physicsBodyType = Phaser.Physics.ARCADE;
+    }
+
+    addBrickAt(type, x, y) {
+        new Brick(this.group, type, x, y);
+    }
+
+    update(ball) {
+        this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, this.onBallHitBrick, this);
+    }
+
+    reset() {
+        this.group.callAll('revive');
+    }
+
+    createWall(data) {
+        const rows = data.split('\n');
+        let y = START_Y;
+        rows.forEach(row => {
+            const bricks = row.split('');
+            let x = START_X;
+            bricks.forEach(brick => {
+                this.addBrickAt(brick, x, y);
+                x += BRICK_WIDTH + 1;
+            });
+            y += BRICK_HEIGHT + 1;
+        });
+    }
+
+    count() {
+        return this.group.countLiving();
+    }
+
+}
+
+module.exports = Bricks;
+},{}],5:[function(require,module,exports){
 class Controls {
 
     static get buttons() {
@@ -126,9 +208,10 @@ class Controls {
 }
 
 module.exports = Controls;
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const MAX_LIFE = 100;
 const JUST_DEFEND_TIMING = 200;
+const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
@@ -137,7 +220,7 @@ class Player {
     }
 
     receiveNormalDamage() {
-        this.life -= 10;
+        this.life -= NORMAL_DAMAGE;
     }
 
     restoreFullLife() {
@@ -159,21 +242,29 @@ class Player {
 }
 
 module.exports = Player;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 const Player = require('./domain/player');
 const Controls = require('./controls');
+const Bricks = require('./bricks');
+const HUD = require('./hud');
 
 class GameEngine {
     constructor(game) {
         this.game = game;
         this.player = new Player();
+        this.bricks = new Bricks(game);
+        this.bricks.onBallHitBrick = this.onPlayerHitBrick.bind(this);
+        this.hud = new HUD(game);
     }
 
     preload() {
         this.game.load.atlas('sprites', 'assets/sprites/sprite.png', 'assets/sprites/sprite.json');
+        this.game.load.text('level_1', '../assets/levels/level_1/wall.data');
     }
 
     create() {
+        this.game.stage.smoothed = false;
+
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
@@ -181,12 +272,20 @@ class GameEngine {
         this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
         this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
         this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
+
+        const level1 = this.game.cache.getText('level_1');
+        this.bricks.create();
+        this.bricks.createWall(level1);
+
+        this.hud.create(this.player, this.bricks);
     }
 
     onBallLost() {
         this.paddle.reset(this.ball);
         this.player.restoreFullLife();
-        this.hud.lifeUIComponent.update(this.player.life);
+        this.bricks.reset();
+        this.hud.playerLifeUIComponent.update(this.player.life);
+        this.hud.levelLifeUIComponent.update(this.bricks.count());
     }
 
     onBallHitPlayer() {
@@ -200,6 +299,10 @@ class GameEngine {
         }
     }
 
+    onPlayerHitBrick() {
+        this.hud.levelLifeUIComponent.update(this.bricks.count() - 1);
+    }
+
     onPlayerJustDefended() {
         this.hud.justDefendUIComponent.show();
         this.paddle.justDefendStance();
@@ -210,7 +313,7 @@ class GameEngine {
         this.player.receiveNormalDamage();
         this.paddle.damagedStance();
         setTimeout(() => this.paddle.normalStance(), 100);
-        this.hud.lifeUIComponent.update(this.player.life);
+        this.hud.playerLifeUIComponent.update(this.player.life);
     }
 
     update() {
@@ -227,6 +330,7 @@ class GameEngine {
             this.player.justDefend();
         }
         this.paddle.update(this.ball);
+        this.bricks.update(this.ball);
     }
 
     playerHasInputedJustDefend() {
@@ -254,26 +358,28 @@ class GameEngine {
 }
 
 module.exports = GameEngine;
-},{"./controls":4,"./domain/player":5}],7:[function(require,module,exports){
+},{"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8}],8:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-ui-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
 
 class HUD {
 
     constructor(game) {
-        this.lifeUIComponent = new LifeUIComponent(game);
+        this.playerLifeUIComponent = new LifeUIComponent(game);
+        this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
     }
 
-    create() {
-        this.lifeUIComponent.create();
+    create(player, bricks) {
+        this.playerLifeUIComponent.create(10, 10, player.life);
+        this.levelLifeUIComponent.create(200, 10, bricks.count());
         this.justDefendUIComponent.create();
     }
 
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":8,"./hud/components/life-ui-component":9}],8:[function(require,module,exports){
+},{"./hud/components/just-defend-component":9,"./hud/components/life-ui-component":10}],9:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -298,15 +404,19 @@ class JustDefendUIComponent {
 
 }
 module.exports = JustDefendUIComponent;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 class LifeUIComponent {
 
     constructor(game) {
         this.game = game;
     }
 
-    create() {
-        this.component = this.game.add.text(10, 10, 'life: 100', { font: '20px Courrier', fill: '#00FF00', align: 'left' });
+    create(x, y, initialLife) {
+        this.component = this.game.add.text(x, y, `life: ${initialLife}`, {
+            font: '20px Courrier',
+            fill: '#00FF00',
+            align: 'left'
+        });
     }
 
     update(life) {
@@ -314,7 +424,7 @@ class LifeUIComponent {
     }
 }
 module.exports = LifeUIComponent;
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -366,14 +476,14 @@ class Paddle {
 
     reset(ball) {
         this.ballOnPaddle = true;
-        const x = this.body.x + 16;
-        const y = this.y - 10;
+        const x = this.sprite.body.x;
+        const y = this.y - ball.height;
         ball.resetAt(x, y);
     }
 
     update(ball) {
         if (this.ballOnPaddle) {
-            ball.setX(this.x);
+            ball.setX(this.x - ball.width/2);
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }
@@ -384,11 +494,11 @@ class Paddle {
         if (ballSprite.x < paddleSprite.x) {
             //  Ball is on the left-hand side of the paddle
             diff = paddleSprite.x - ballSprite.x;
-            ballSprite.body.velocity.x = (-10 * diff);
+            ballSprite.body.velocity.x = (-8 * diff);
         } else if (ballSprite.x > paddleSprite.x) {
             //  Ball is on the right-hand side of the paddle
             diff = ballSprite.x - paddleSprite.x;
-            ballSprite.body.velocity.x = (10 * diff);
+            ballSprite.body.velocity.x = (8 * diff);
         } else {
             //  Ball is perfectly in the middle
             //  Add a little random X to stop it bouncing straight up!
@@ -434,16 +544,18 @@ class Paddle {
 
 }
 module.exports = Paddle;
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
 const BreakOutFighters = require('./breakout-fighters');
 const breakOutFighters = new BreakOutFighters(WIDTH, HEIGHT);
 
+const antialias = false;
+const transparent = false;
 new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     preload: breakOutFighters.preload.bind(breakOutFighters),
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
-});
-},{"./breakout-fighters":3}]},{},[11]);
+}, transparent, antialias);
+},{"./breakout-fighters":3}]},{},[12]);

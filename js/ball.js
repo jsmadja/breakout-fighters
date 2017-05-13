@@ -1,3 +1,4 @@
+const speed = 0.5;
 class Ball {
 
     constructor(game) {
@@ -21,8 +22,8 @@ class Ball {
     }
 
     release() {
-        this.sprite.body.velocity.y = -300;
-        this.sprite.body.velocity.x = -75;
+        this.sprite.body.velocity.y = -300 * speed;
+        this.sprite.body.velocity.x = -75 * speed;
         this.sprite.animations.play('spin');
     }
 
@@ -34,6 +35,14 @@ class Ball {
 
     destroy() {
         this.sprite.body.velocity.setTo(0, 0);
+    }
+
+    get height() {
+        return this.sprite.body.height;
+    }
+
+    get width() {
+        return this.sprite.body.width;
     }
 }
 

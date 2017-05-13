@@ -1,5 +1,6 @@
 const MAX_LIFE = 100;
 const JUST_DEFEND_TIMING = 200;
+const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
@@ -8,7 +9,7 @@ class Player {
     }
 
     receiveNormalDamage() {
-        this.life -= 10;
+        this.life -= NORMAL_DAMAGE;
     }
 
     restoreFullLife() {

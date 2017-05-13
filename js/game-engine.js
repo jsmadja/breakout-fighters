@@ -1,17 +1,25 @@
 const Player = require('./domain/player');
 const Controls = require('./controls');
+const Bricks = require('./bricks');
+const HUD = require('./hud');
 
 class GameEngine {
     constructor(game) {
         this.game = game;
         this.player = new Player();
+        this.bricks = new Bricks(game);
+        this.bricks.onBallHitBrick = this.onPlayerHitBrick.bind(this);
+        this.hud = new HUD(game);
     }
 
     preload() {
         this.game.load.atlas('sprites', 'assets/sprites/sprite.png', 'assets/sprites/sprite.json');
+        this.game.load.text('level_1', '../assets/levels/level_1/wall.data');
     }
 
     create() {
+        this.game.stage.smoothed = false;
+
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.bounds = new Phaser.Rectangle(0, 20, this.game.world.width, this.game.world.height);
         this.game.physics.arcade.checkCollision.down = false;
@@ -19,12 +27,20 @@ class GameEngine {
         this.leftDirection = this.game.input.keyboard.addKey(Controls.joystick.LEFT);
         this.rightDirection = this.game.input.keyboard.addKey(Controls.joystick.RIGHT);
         this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
+
+        const level1 = this.game.cache.getText('level_1');
+        this.bricks.create();
+        this.bricks.createWall(level1);
+
+        this.hud.create(this.player, this.bricks);
     }
 
     onBallLost() {
         this.paddle.reset(this.ball);
         this.player.restoreFullLife();
-        this.hud.lifeUIComponent.update(this.player.life);
+        this.bricks.reset();
+        this.hud.playerLifeUIComponent.update(this.player.life);
+        this.hud.levelLifeUIComponent.update(this.bricks.count());
     }
 
     onBallHitPlayer() {
@@ -38,6 +54,10 @@ class GameEngine {
         }
     }
 
+    onPlayerHitBrick() {
+        this.hud.levelLifeUIComponent.update(this.bricks.count() - 1);
+    }
+
     onPlayerJustDefended() {
         this.hud.justDefendUIComponent.show();
         this.paddle.justDefendStance();
@@ -48,7 +68,7 @@ class GameEngine {
         this.player.receiveNormalDamage();
         this.paddle.damagedStance();
         setTimeout(() => this.paddle.normalStance(), 100);
-        this.hud.lifeUIComponent.update(this.player.life);
+        this.hud.playerLifeUIComponent.update(this.player.life);
     }
 
     update() {
@@ -65,6 +85,7 @@ class GameEngine {
             this.player.justDefend();
         }
         this.paddle.update(this.ball);
+        this.bricks.update(this.ball);
     }
 
     playerHasInputedJustDefend() {

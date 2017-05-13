@@ -4,12 +4,14 @@ const JustDefendUIComponent = require('./hud/components/just-defend-component');
 class HUD {
 
     constructor(game) {
-        this.lifeUIComponent = new LifeUIComponent(game);
+        this.playerLifeUIComponent = new LifeUIComponent(game);
+        this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
     }
 
-    create() {
-        this.lifeUIComponent.create();
+    create(player, bricks) {
+        this.playerLifeUIComponent.create(10, 10, player.life);
+        this.levelLifeUIComponent.create(200, 10, bricks.count());
         this.justDefendUIComponent.create();
     }
 

@@ -212,6 +212,22 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">bricks/A/A.png</key>
+            <key type="filename">bricks/B/B.png</key>
+            <key type="filename">bricks/C/C.png</key>
+            <key type="filename">bricks/D/D.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>5,3,10,5</rect>
+                <key>scale9Paddings</key>
+                <rect>5,3,10,5</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">paddle.png</key>
             <key type="filename">paddle/damaged/1.png</key>
             <key type="filename">paddle/just_defend/1.png</key>
@@ -233,6 +249,7 @@
             <filename>paddle.png</filename>
             <filename>ball.png</filename>
             <filename>paddle</filename>
+            <filename>bricks</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
