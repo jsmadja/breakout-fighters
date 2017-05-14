@@ -10,7 +10,7 @@ class Background {
     }
 
     create(width, height) {
-        this.game.add.tileSprite(0, 0, width, height, 'grid');
+        //this.game.add.tileSprite(0, 0, width, height, 'grid');
     }
 
 }
@@ -125,7 +125,7 @@ class BreakOutFighters {
         this.paddle.reset(this.ball);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-        //game.input.onDown.add(() => this.gofull(game), this);
+        game.input.onDown.add(() => this.gofull(game), this);
     }
 
     gofull(game) {
@@ -146,7 +146,7 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":13}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":14}],4:[function(require,module,exports){
 class Brick {
     constructor(group, type, x, y) {
         const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
@@ -396,6 +396,8 @@ class GameEngine {
     }
 
     update() {
+        const time = new Date().getTime();
+
         if (this.aButton.isDown) {
             this.ball.type = Ball.Type.A;
             this.insertInputHistory(Controls.buttons.A);
@@ -413,6 +415,9 @@ class GameEngine {
             this.insertInputHistory(Controls.buttons.D);
         }
         if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
+            if (this.paddle.ballOnPaddle) {
+                this.time = new Date().getTime();
+            }
             this.detectSpecialMove();
             this.paddle.release(this.ball);
         }
@@ -440,6 +445,12 @@ class GameEngine {
         }
         this.paddle.update(this.ball);
         this.bricks.update(this.ball);
+        this.hud.timeIUComponent.update(this.getRemainingTime(time));
+    }
+
+    getRemainingTime(time) {
+        const elapsedTimeInSeconds = (time - this.time) / 1000;
+        return parseInt(100 - elapsedTimeInSeconds);
     }
 
     detectSpecialMove() {
@@ -484,20 +495,23 @@ class GameEngine {
 }
 
 module.exports = GameEngine;
-},{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8,"./special-moves":14,"lodash":16}],8:[function(require,module,exports){
+},{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8,"./special-moves":15,"lodash":17}],8:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
 const RushUIComponent = require('./hud/components/rush-component');
 const PowerUIComponent = require('./hud/components/power-component');
+const TimeUIComponent = require('./hud/components/time-component');
 
 class HUD {
 
     constructor(game) {
+        this.game = game;
         this.playerLifeUIComponent = new LifeUIComponent(game);
         this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
         this.rushUIComponent = new RushUIComponent(game);
         this.powerUIComponent = new PowerUIComponent(game);
+        this.timeIUComponent = new TimeUIComponent(game);
     }
 
     create(player, bricks) {
@@ -506,6 +520,7 @@ class HUD {
         this.powerUIComponent.create(10, 210);
         this.justDefendUIComponent.create();
         this.rushUIComponent.create();
+        this.timeIUComponent.create(this.game.world.centerX - 10, 3);
     }
 
     preload() {
@@ -517,7 +532,7 @@ class HUD {
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":9,"./hud/components/life-component":10,"./hud/components/power-component":11,"./hud/components/rush-component":12}],9:[function(require,module,exports){
+},{"./hud/components/just-defend-component":9,"./hud/components/life-component":10,"./hud/components/power-component":11,"./hud/components/rush-component":12,"./hud/components/time-component":13}],9:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -614,18 +629,32 @@ class RushUIComponent {
 
     update(rush) {
         this.component.text = `Rush ${rush}`;
-        const visible = rush >= 2;
-        if (visible) {
-            this.component.visible = true;
-            setTimeout(() => {
-                this.component.visible = false;
-            }, 1000);
-        }
+        this.component.visible = rush >= 2;
     }
 
 }
 module.exports = RushUIComponent;
 },{}],13:[function(require,module,exports){
+class TimeUIComponent {
+
+    constructor(game) {
+        this.game = game;
+    }
+
+    create(x, y) {
+        this.component = this.game.add.text(x, y, '99', {
+            font: '20px Courrier',
+            fill: '#FFFFFF',
+        });
+    }
+
+    update(time) {
+        this.component.text = time;
+        this.component.visible = !!time;
+    }
+}
+module.exports = TimeUIComponent;
+},{}],14:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -745,7 +774,7 @@ class Paddle {
 
 }
 module.exports = Paddle;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 const _ = require('lodash');
 
 const templates = [
@@ -766,7 +795,7 @@ class SpecialMoves {
 }
 
 module.exports = SpecialMoves;
-},{"lodash":16}],15:[function(require,module,exports){
+},{"lodash":17}],16:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -780,7 +809,7 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 }, transparent, antialias);
-},{"./breakout-fighters":3}],16:[function(require,module,exports){
+},{"./breakout-fighters":3}],17:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -17868,4 +17897,4 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[15]);
+},{}]},{},[16]);

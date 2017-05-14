@@ -14,13 +14,7 @@ class RushUIComponent {
 
     update(rush) {
         this.component.text = `Rush ${rush}`;
-        const visible = rush >= 2;
-        if (visible) {
-            this.component.visible = true;
-            setTimeout(() => {
-                this.component.visible = false;
-            }, 1000);
-        }
+        this.component.visible = rush >= 2;
     }
 
 }

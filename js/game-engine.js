@@ -100,6 +100,8 @@ class GameEngine {
     }
 
     update() {
+        const time = new Date().getTime();
+
         if (this.aButton.isDown) {
             this.ball.type = Ball.Type.A;
             this.insertInputHistory(Controls.buttons.A);
@@ -117,6 +119,9 @@ class GameEngine {
             this.insertInputHistory(Controls.buttons.D);
         }
         if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
+            if (this.paddle.ballOnPaddle) {
+                this.time = new Date().getTime();
+            }
             this.detectSpecialMove();
             this.paddle.release(this.ball);
         }
@@ -144,6 +149,12 @@ class GameEngine {
         }
         this.paddle.update(this.ball);
         this.bricks.update(this.ball);
+        this.hud.timeIUComponent.update(this.getRemainingTime(time));
+    }
+
+    getRemainingTime(time) {
+        const elapsedTimeInSeconds = (time - this.time) / 1000;
+        return parseInt(100 - elapsedTimeInSeconds);
     }
 
     detectSpecialMove() {
