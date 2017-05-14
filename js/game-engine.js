@@ -21,7 +21,7 @@ class GameEngine {
 
     preload() {
         this.game.load.atlas('sprites', 'assets/sprites/sprite.png', 'assets/sprites/sprite.json');
-        this.game.load.text('level_1', '../assets/levels/level_1/wall.data');
+        this.game.load.text('level_1', 'assets/levels/level_1/wall.data');
         this.hud.preload();
     }
 
