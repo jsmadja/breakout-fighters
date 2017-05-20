@@ -1,10 +1,10 @@
 const Player = require('./domain/player');
 const Controls = require('./controls');
-const Bricks = require('./bricks');
+const Bricks = require('./domain/bricks');
 const HUD = require('./hud');
-const Ball = require('./ball');
+const Ball = require('./domain/ball');
 const _ = require('lodash');
-const SpecialMoves = require('./special-moves');
+const SpecialMoves = require('./domain/special-moves');
 
 const SPECIAL_MOVE_POWER_BONUS = 10;
 const NORMAL_MOVE_POWER_BONUS = 1;
@@ -46,7 +46,7 @@ class GameEngine {
         this.player.activateMaxMode();
         this.hud.activateMaxMode();
         this.paddle.activateMaxMode();
-        this.ball.activateMaxMode();
+        this.balls.activateMaxMode();
         this.bricks.activateMaxMode();
         setTimeout(() => {
             this.onMaxModeDeactivation();
@@ -57,7 +57,7 @@ class GameEngine {
         this.player.deactivateMaxMode();
         this.hud.deactivateMaxMode();
         this.paddle.deactivateMaxMode();
-        this.ball.deactivateMaxMode();
+        this.balls.deactivateMaxMode();
         this.bricks.deactivateMaxMode();
     }
 
@@ -73,7 +73,7 @@ class GameEngine {
 
     onBallLost() {
         this.onMaxModeDeactivation();
-        this.paddle.reset(this.ball);
+        this.paddle.reset(this.balls);
         this.player.reset();
         this.bricks.reset();
         this.hud.powerUIComponent.update(this.player.power);
@@ -93,7 +93,7 @@ class GameEngine {
     }
 
     onPlayerHitBrick(brick) {
-        if (this.ball.type === brick.type) {
+        if (this.balls.type === brick.type) {
             if (this.player.specialMoving) {
                 this.player.power += SPECIAL_MOVE_POWER_BONUS;
             } else {
@@ -105,7 +105,7 @@ class GameEngine {
             this.player.rush = 0;
         }
         if (!this.player.maxmode) {
-            this.ball.type = Ball.Type.NEUTRAL;
+            this.balls.type = Ball.Type.NEUTRAL;
         }
         this.hud.levelLifeUIComponent.update(this.bricks.life);
         this.hud.rushUIComponent.update(this.player.rush);
@@ -129,25 +129,25 @@ class GameEngine {
 
         if (this.aButton.isDown) {
             if (!this.player.maxmode) {
-                this.ball.type = Ball.Type.A;
+                this.balls.type = Ball.Type.A;
             }
             this.insertInputHistory(Controls.buttons.A);
         }
         if (this.bButton.isDown) {
             if (!this.player.maxmode) {
-                this.ball.type = Ball.Type.B;
+                this.balls.type = Ball.Type.B;
             }
             this.insertInputHistory(Controls.buttons.B);
         }
         if (this.cButton.isDown) {
             if (!this.player.maxmode) {
-                this.ball.type = Ball.Type.C;
+                this.balls.type = Ball.Type.C;
             }
             this.insertInputHistory(Controls.buttons.C);
         }
         if (this.dButton.isDown) {
             if (!this.player.maxmode) {
-                this.ball.type = Ball.Type.D;
+                this.balls.type = Ball.Type.D;
             }
             this.insertInputHistory(Controls.buttons.D);
         }
@@ -156,7 +156,7 @@ class GameEngine {
                 this.time = new Date().getTime();
             }
             this.detectSpecialMove();
-            this.paddle.release(this.ball);
+            this.paddle.release(this.balls);
         }
         if (this.bButton.isDown && this.cButton.isDown && this.player.canActivateMaxmode()) {
             this.onMaxModeActivation();
@@ -188,13 +188,13 @@ class GameEngine {
             this.player.power = 100 - (time - this.player.maxmodeActivationTime) / 100;
         }
 
-        this.paddle.update(this.ball);
-        this.bricks.update(this.ball);
+        this.paddle.update(this.balls);
+        this.bricks.update(this.balls);
         this.hud.timeIUComponent.update(this.getRemainingTime(time));
         if (this.player.maxmode) {
             this.hud.powerUIComponent.update(this.player.power);
         }
-        this.ball.update();
+        this.balls.update();
     }
 
     getRemainingTime(time) {
@@ -232,13 +232,13 @@ class GameEngine {
         return this._paddle;
     }
 
-    set ball(ball) {
-        this._ball = ball;
-        this.ball.onOutOfBounds = this.onBallLost.bind(this);
+    set balls(balls) {
+        this._balls = balls;
+        this.balls.onOutOfBounds = this.onBallLost.bind(this);
     }
 
-    get ball() {
-        return this._ball;
+    get balls() {
+        return this._balls;
     }
 
 }

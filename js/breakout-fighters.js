@@ -1,6 +1,6 @@
 const GameEngine = require('./game-engine');
-const Paddle = require('./paddle');
-const Ball = require('./ball');
+const Paddle = require('./domain/paddle');
+const Balls = require('./domain/balls');
 const Background = require('./background');
 
 class BreakOutFighters {
@@ -17,19 +17,19 @@ class BreakOutFighters {
         this.background = new Background(game);
         this.background.preload();
 
-        this.ball = new Ball(game);
+        this.balls = new Balls(game);
         this.paddle = new Paddle(game);
 
-        this.gameEngine.ball = this.ball;
+        this.gameEngine.balls = this.balls;
         this.gameEngine.paddle = this.paddle;
     }
 
     create(game) {
         this.background.create(this.width, this.height);
         this.paddle.create();
-        this.ball.create();
+        this.balls.create();
         this.gameEngine.create();
-        this.paddle.reset(this.ball);
+        this.paddle.reset(this.balls);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
         game.input.onDown.add(() => this.gofull(game), this);

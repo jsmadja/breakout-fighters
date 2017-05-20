@@ -51,27 +51,28 @@ class Paddle {
         this.sprite.y = y;
     }
 
-    release(ball) {
+    release(balls) {
         if (this.ballOnPaddle) {
             this.ballOnPaddle = false;
-            ball.release();
+            balls.release();
         }
     }
 
-    reset(ball) {
+    reset(balls) {
         this.ballOnPaddle = true;
         const x = this.sprite.body.x;
-        const y = this.y - (ball.height * 1.3);
-        ball.resetAt(x, y);
+        const y = this.y - (balls.height * 1.3);
+        balls.resetAt(x, y);
     }
 
-    update(ball) {
+    update(balls) {
         if (this.ballOnPaddle) {
-            ball.setX(this.x - ball.width / 2);
+            balls.setX(this.x - balls.width / 2);
         } else {
-            this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
+            balls.balls.forEach(ball => {
+                return this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
+            });
         }
-
         this.shadow.x = this.sprite.x + this.offset.x;
         this.shadow.y = this.sprite.y + this.offset.y;
     }

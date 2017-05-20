@@ -62,7 +62,7 @@ class Bricks {
         this.bricks.push(brick);
     }
 
-    update(ball) {
+    update(balls) {
         const onCollision = (_ball, _brick) => {
             if (this.maxmode || _ball.type === _brick.type) {
                 _brick.shadow.sprite.kill();
@@ -70,9 +70,11 @@ class Bricks {
             }
             this.collidedBrick = _brick;
         };
-        if (this.game.physics.arcade.collide(ball.sprite, this.group, onCollision, null, this)) {
-            this.onBallHitBrick(this.collidedBrick);
-        }
+        balls.forEach(ball => {
+            if (this.game.physics.arcade.collide(ball.sprite, this.group, onCollision, null, this)) {
+                this.onBallHitBrick(this.collidedBrick);
+            }
+        });
     }
 
     reset() {

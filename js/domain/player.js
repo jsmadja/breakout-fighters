@@ -7,7 +7,6 @@ class Player {
     constructor() {
         this.power = 0;
         this.reset();
-        this.power = 100;
     }
 
     receiveNormalDamage() {

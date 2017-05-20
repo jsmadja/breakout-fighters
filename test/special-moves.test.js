@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const SpecialMoves = require('../js/special-moves');
+const SpecialMoves = require('../js/domain/special-moves');
 
 describe('Special Moves', () => {
 
