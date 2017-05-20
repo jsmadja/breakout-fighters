@@ -6,11 +6,11 @@ class Background {
     }
 
     preload() {
-        this.game.load.image('grid', 'assets/back/grid.png');
+        this.game.load.image('background', 'assets/back/stone.png');
     }
 
     create(width, height) {
-        this.game.add.tileSprite(0, 0, width, height, 'grid');
+        this.game.add.tileSprite(0, 0, width, height, 'background');
     }
 
 }
@@ -171,15 +171,32 @@ class BreakOutFighters {
 
 module.exports = BreakOutFighters;
 },{"./background":1,"./ball":2,"./game-engine":7,"./paddle":15}],4:[function(require,module,exports){
+const START_X = 3;
+const START_Y = 40;
+const BRICK_WIDTH = 20;
+const BRICK_HEIGHT = 10;
+
+class BrickShadow {
+    constructor(shadowGroup, type, x, y) {
+        this.offset = new Phaser.Point(2, 2);
+        this.sprite = shadowGroup.create(x + (BRICK_WIDTH / 2) + this.offset.x, y + (BRICK_HEIGHT/2) + this.offset.y, 'sprites', `${type}/${type}.png`);
+        this.sprite.anchor.set(0.5);
+        this.sprite.tint = 0x000000;
+        this.sprite.alpha = 0.6;
+    }
+
+}
+
 class Brick {
-    constructor(group, type, x, y) {
-        this.sprite = group.create(x, y, 'sprites', `${type}/${type}.png`);
+    constructor(bricksGroup, type, x, y, shadow) {
+        this.sprite = bricksGroup.create(x, y, 'sprites', `${type}/${type}.png`);
         this.sprite.body.bounce.set(1);
         this.sprite.body.immovable = true;
         this.sprite.type = type;
         this.sprite.animations.add('normal', Phaser.Animation.generateFrameNames(`${type}/`, 1, 1, '.png'));
         this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/bricks_maxmode_', 1, 1, '.png'));
         this.sprite.animations.play('normal');
+        this.sprite.shadow = shadow;
     }
 
     activateMaxMode() {
@@ -191,31 +208,37 @@ class Brick {
     }
 }
 
-const START_X = 3;
-const START_Y = 40;
-const BRICK_WIDTH = 20;
-const BRICK_HEIGHT = 10;
-
 class Bricks {
 
     constructor(game) {
         this.game = game;
         this.bricks = [];
+        this.bricksShadow = [];
     }
 
     create() {
         this.group = this.game.add.group();
+        this.groupShadows = this.game.add.group();
         this.group.enableBody = true;
         this.group.physicsBodyType = Phaser.Physics.ARCADE;
+
+        const group1 = this.game.add.group();
+        group1.add(this.groupShadows);
+        group1.add(this.group);
+
     }
 
     addBrickAt(type, x, y) {
-        this.bricks.push(new Brick(this.group, type, x, y));
+        const shadow = new BrickShadow(this.groupShadows, type, x, y, this.game);
+        const brick = new Brick(this.group, type, x, y, shadow);
+        this.bricksShadow.push(shadow);
+        this.bricks.push(brick);
     }
 
     update(ball) {
         const onCollision = (_ball, _brick) => {
             if (this.maxmode || _ball.type === _brick.type) {
+                _brick.shadow.sprite.kill();
                 _brick.kill();
             }
             this.collidedBrick = _brick;
@@ -227,6 +250,7 @@ class Bricks {
 
     reset() {
         this.group.callAll('revive');
+        this.groupShadows.callAll('revive');
     }
 
     createWall(data) {
@@ -823,6 +847,16 @@ class Paddle {
         this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
         this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
         this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/paddle_maxmode_', 1, 1, '.png'));
+
+        this.offset = new Phaser.Point(2, 2);
+        this.shadow = this.game.add.sprite(this.game.world.centerX, 200, 'sprites', 'paddle.png');
+        this.shadow.anchor.set(0.5);
+        this.shadow.tint = 0x000000;
+        this.shadow.alpha = 0.6;
+
+        const group = this.game.add.group();
+        group.add(this.shadow);
+        group.add(this.sprite);
     }
 
     get x() {
@@ -865,6 +899,9 @@ class Paddle {
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }
+
+        this.shadow.x = this.sprite.x + this.offset.x;
+        this.shadow.y = this.sprite.y + this.offset.y;
     }
 
     static reflect(paddleSprite, ballSprite) {

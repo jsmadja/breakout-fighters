@@ -5,11 +5,11 @@ class Background {
     }
 
     preload() {
-        this.game.load.image('grid', 'assets/back/grid.png');
+        this.game.load.image('background', 'assets/back/stone.png');
     }
 
     create(width, height) {
-        this.game.add.tileSprite(0, 0, width, height, 'grid');
+        this.game.add.tileSprite(0, 0, width, height, 'background');
     }
 
 }

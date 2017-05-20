@@ -19,6 +19,16 @@ class Paddle {
         this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
         this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
         this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/paddle_maxmode_', 1, 1, '.png'));
+
+        this.offset = new Phaser.Point(2, 2);
+        this.shadow = this.game.add.sprite(this.game.world.centerX, 200, 'sprites', 'paddle.png');
+        this.shadow.anchor.set(0.5);
+        this.shadow.tint = 0x000000;
+        this.shadow.alpha = 0.6;
+
+        const group = this.game.add.group();
+        group.add(this.shadow);
+        group.add(this.sprite);
     }
 
     get x() {
@@ -61,6 +71,9 @@ class Paddle {
         } else {
             this.game.physics.arcade.collide(this.sprite, ball.sprite, Paddle.reflect, this.onBallHitPaddle, this);
         }
+
+        this.shadow.x = this.sprite.x + this.offset.x;
+        this.shadow.y = this.sprite.y + this.offset.y;
     }
 
     static reflect(paddleSprite, ballSprite) {
