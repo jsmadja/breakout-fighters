@@ -76,7 +76,7 @@
         <key>jpgQuality</key>
         <uint>80</uint>
         <key>pngOptimizationLevel</key>
-        <uint>1</uint>
+        <uint>0</uint>
         <key>webpQualityLevel</key>
         <uint>101</uint>
         <key>textureSubPath</key>
@@ -104,7 +104,7 @@
         <key>algorithmSettings</key>
         <struct type="AlgorithmSettings">
             <key>algorithm</key>
-            <enum type="AlgorithmSettings::AlgorithmId">MaxRects</enum>
+            <enum type="AlgorithmSettings::AlgorithmId">Basic</enum>
             <key>freeSizeMode</key>
             <enum type="AlgorithmSettings::AlgorithmFreeSizeMode">Best</enum>
             <key>sizeConstraints</key>
@@ -167,7 +167,7 @@
             <string></string>
         </struct>
         <key>autoAliasEnabled</key>
-        <true/>
+        <false/>
         <key>trimSpriteNames</key>
         <false/>
         <key>prependSmartFolderName</key>
@@ -181,13 +181,13 @@
             <key>scaleMode</key>
             <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
-            <uint>1</uint>
+            <uint>0</uint>
             <key>trimThreshold</key>
             <uint>1</uint>
             <key>trimMargin</key>
             <uint>1</uint>
             <key>trimMode</key>
-            <enum type="SpriteSettings::TrimMode">Trim</enum>
+            <enum type="SpriteSettings::TrimMode">None</enum>
             <key>tracerTolerance</key>
             <int>200</int>
             <key>heuristicMask</key>
@@ -216,6 +216,7 @@
             <key type="filename">balls/B/ball_B.png</key>
             <key type="filename">balls/C/ball_C.png</key>
             <key type="filename">balls/D/ball_D.png</key>
+            <key type="filename">balls/maxmode/ball_maxmode.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -228,10 +229,15 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">bricks/A/1.png</key>
             <key type="filename">bricks/A/A.png</key>
+            <key type="filename">bricks/B/1.png</key>
             <key type="filename">bricks/B/B.png</key>
+            <key type="filename">bricks/C/1.png</key>
             <key type="filename">bricks/C/C.png</key>
+            <key type="filename">bricks/D/1.png</key>
             <key type="filename">bricks/D/D.png</key>
+            <key type="filename">bricks/maxmode/bricks_maxmode_1.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -259,6 +265,33 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">paddle/maxmode/paddle_maxmode_1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>6,2,12,4</rect>
+                <key>scale9Paddings</key>
+                <rect>6,2,12,4</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">power.png</key>
+            <key type="filename">power/maxmode/1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,3,50,5</rect>
+                <key>scale9Paddings</key>
+                <rect>25,3,50,5</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
         </map>
         <key>fileList</key>
         <array>
@@ -267,6 +300,8 @@
             <filename>paddle</filename>
             <filename>bricks</filename>
             <filename>balls</filename>
+            <filename>power</filename>
+            <filename>power.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

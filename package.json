@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "watchify js -o bundle.js -v"
+    "start": "watchify js -o bundle.js -v"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.4",
+    "moment": "^2.18.1",
+    "moment-timer": "^1.1.5",
     "require-text": "^0.0.1",
     "text": "requirejs/text"
   }

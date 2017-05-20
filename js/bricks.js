@@ -1,16 +1,20 @@
 class Brick {
     constructor(group, type, x, y) {
-        const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
-        brick.body.bounce.set(1);
-        brick.body.immovable = true;
-        brick.type = type;
+        this.sprite = group.create(x, y, 'sprites', `${type}/${type}.png`);
+        this.sprite.body.bounce.set(1);
+        this.sprite.body.immovable = true;
+        this.sprite.type = type;
+        this.sprite.animations.add('normal', Phaser.Animation.generateFrameNames(`${type}/`, 1, 1, '.png'));
+        this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/bricks_maxmode_', 1, 1, '.png'));
+        this.sprite.animations.play('normal');
     }
 
-    static reflect(_ball, _brick) {
-        if (_ball.type === _brick.type) {
-            _brick.kill();
-        }
-        this.collidedBrick = _brick;
+    activateMaxMode() {
+        this.sprite.animations.play('maxmode');
+    }
+
+    deactivateMaxMode() {
+        this.sprite.animations.play('normal');
     }
 }
 
@@ -23,6 +27,7 @@ class Bricks {
 
     constructor(game) {
         this.game = game;
+        this.bricks = [];
     }
 
     create() {
@@ -32,11 +37,17 @@ class Bricks {
     }
 
     addBrickAt(type, x, y) {
-        new Brick(this.group, type, x, y);
+        this.bricks.push(new Brick(this.group, type, x, y));
     }
 
     update(ball) {
-        if (this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, null, this)) {
+        const onCollision = (_ball, _brick) => {
+            if (this.maxmode || _ball.type === _brick.type) {
+                _brick.kill();
+            }
+            this.collidedBrick = _brick;
+        };
+        if (this.game.physics.arcade.collide(ball.sprite, this.group, onCollision, null, this)) {
             this.onBallHitBrick(this.collidedBrick);
         }
     }
@@ -66,6 +77,16 @@ class Bricks {
 
     get life() {
         return 100 * (this.count() / this.total);
+    }
+
+    activateMaxMode() {
+        this.maxmode = true;
+        this.bricks.forEach(brick => brick.activateMaxMode());
+    }
+
+    deactivateMaxMode() {
+        this.maxmode = false;
+        this.bricks.forEach(brick => brick.deactivateMaxMode());
     }
 
 }

@@ -1,8 +1,16 @@
 {"frames": [
 
 {
+	"filename": "A/1.png",
+	"frame": {"x":0,"y":0,"w":20,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
+	"sourceSize": {"w":20,"h":10}
+},
+{
 	"filename": "A/A.png",
-	"frame": {"x":94,"y":1,"w":20,"h":10},
+	"frame": {"x":25,"y":0,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
@@ -10,15 +18,23 @@
 },
 {
 	"filename": "A/ball_A.png",
-	"frame": {"x":121,"y":1,"w":5,"h":5},
+	"frame": {"x":50,"y":0,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
 	"sourceSize": {"w":5,"h":5}
 },
 {
+	"filename": "B/1.png",
+	"frame": {"x":60,"y":0,"w":20,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
+	"sourceSize": {"w":20,"h":10}
+},
+{
 	"filename": "B/B.png",
-	"frame": {"x":1,"y":16,"w":20,"h":10},
+	"frame": {"x":85,"y":0,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
@@ -26,7 +42,7 @@
 },
 {
 	"filename": "B/ball_B.png",
-	"frame": {"x":121,"y":13,"w":5,"h":5},
+	"frame": {"x":110,"y":0,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
@@ -34,15 +50,23 @@
 },
 {
 	"filename": "ball.png",
-	"frame": {"x":106,"y":18,"w":5,"h":5},
+	"frame": {"x":120,"y":0,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
 	"sourceSize": {"w":5,"h":5}
 },
 {
+	"filename": "C/1.png",
+	"frame": {"x":130,"y":0,"w":20,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
+	"sourceSize": {"w":20,"h":10}
+},
+{
 	"filename": "C/ball_C.png",
-	"frame": {"x":82,"y":16,"w":5,"h":5},
+	"frame": {"x":155,"y":0,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
@@ -50,7 +74,15 @@
 },
 {
 	"filename": "C/C.png",
-	"frame": {"x":28,"y":16,"w":20,"h":10},
+	"frame": {"x":165,"y":0,"w":20,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
+	"sourceSize": {"w":20,"h":10}
+},
+{
+	"filename": "D/1.png",
+	"frame": {"x":190,"y":0,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
@@ -58,7 +90,7 @@
 },
 {
 	"filename": "D/ball_D.png",
-	"frame": {"x":94,"y":18,"w":5,"h":5},
+	"frame": {"x":215,"y":0,"w":5,"h":5},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
@@ -66,7 +98,7 @@
 },
 {
 	"filename": "D/D.png",
-	"frame": {"x":55,"y":16,"w":20,"h":10},
+	"frame": {"x":225,"y":0,"w":20,"h":10},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
@@ -74,7 +106,7 @@
 },
 {
 	"filename": "damaged/1.png",
-	"frame": {"x":1,"y":1,"w":24,"h":8},
+	"frame": {"x":250,"y":0,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
@@ -82,7 +114,39 @@
 },
 {
 	"filename": "just_defend/1.png",
-	"frame": {"x":32,"y":1,"w":24,"h":8},
+	"frame": {"x":279,"y":0,"w":24,"h":8},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
+	"sourceSize": {"w":24,"h":8}
+},
+{
+	"filename": "maxmode/1.png",
+	"frame": {"x":308,"y":0,"w":100,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":10},
+	"sourceSize": {"w":100,"h":10}
+},
+{
+	"filename": "maxmode/ball_maxmode.png",
+	"frame": {"x":413,"y":0,"w":5,"h":5},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":5,"h":5},
+	"sourceSize": {"w":5,"h":5}
+},
+{
+	"filename": "maxmode/bricks_maxmode_1.png",
+	"frame": {"x":423,"y":0,"w":20,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":20,"h":10},
+	"sourceSize": {"w":20,"h":10}
+},
+{
+	"filename": "maxmode/paddle_maxmode_1.png",
+	"frame": {"x":448,"y":0,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
@@ -90,19 +154,27 @@
 },
 {
 	"filename": "paddle.png",
-	"frame": {"x":63,"y":1,"w":24,"h":8},
+	"frame": {"x":477,"y":0,"w":24,"h":8},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":8},
 	"sourceSize": {"w":24,"h":8}
+},
+{
+	"filename": "power.png",
+	"frame": {"x":506,"y":0,"w":100,"h":10},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":100,"h":10},
+	"sourceSize": {"w":100,"h":10}
 }],
 "meta": {
 	"app": "http://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "sprite.png",
 	"format": "RGBA8888",
-	"size": {"w":127,"h":27},
+	"size": {"w":606,"h":10},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:b55dbd33c547eade33cc17268e3e0558:6370a91be2afdb2469416ab09158b779:68d88b3cf7eafc9b5accfffdfb2fda91$"
+	"smartupdate": "$TexturePacker:SmartUpdate:075ac42ded797d2ceddedabf0f0f2fab:e55391713c0ab52d564b1c2c7ba976fe:68d88b3cf7eafc9b5accfffdfb2fda91$"
 }
 }

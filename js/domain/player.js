@@ -7,6 +7,7 @@ class Player {
     constructor() {
         this.power = 0;
         this.reset();
+        this.power = 100;
     }
 
     receiveNormalDamage() {
@@ -42,6 +43,22 @@ class Player {
             this.specialMoving = false;
         }, SPECIAL_MOVE_TIMING);
     }
+
+    activateMaxMode() {
+        this.maxmode = true;
+        this.maxmodeActivationTime = new Date().getTime();
+    }
+
+    deactivateMaxMode() {
+        this.power = 0;
+        this.maxmode = false;
+        delete this.maxmodeActivationTime;
+    }
+
+    canActivateMaxmode() {
+        return this.power >= 100;
+    }
+
 }
 
 module.exports = Player;

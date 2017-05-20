@@ -13,9 +13,24 @@ class Ball {
 
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
+        this.offset = new Phaser.Point(2, 2);
+        this.shadow = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
+        this.shadow.anchor.set(0.5);
+        this.shadow.tint = 0x000000;
+        this.shadow.alpha = 0.6;
+
         this.sprite.body.collideWorldBounds = true;
         this.sprite.body.bounce.set(1);
         this.sprite.events.onOutOfBounds.add(this.onOutOfBounds, this);
+
+        const group = this.game.add.group();
+        group.add(this.shadow);
+        group.add(this.sprite);
+    }
+
+    update() {
+        this.shadow.x = this.sprite.x + this.offset.x;
+        this.shadow.y = this.sprite.y + this.offset.y;
     }
 
     setX(x) {
@@ -66,7 +81,16 @@ class Ball {
             C: 'C',
             D: 'D',
             NEUTRAL: 'NEUTRAL',
+            MAXMODE: 'maxmode',
         };
+    }
+
+    activateMaxMode() {
+        this.type = Ball.Type.MAXMODE;
+    }
+
+    deactivateMaxMode() {
+        this.type = Ball.Type.NEUTRAL;
     }
 }
 

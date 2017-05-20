@@ -9,7 +9,7 @@ class Background {
     }
 
     create(width, height) {
-        //this.game.add.tileSprite(0, 0, width, height, 'grid');
+        this.game.add.tileSprite(0, 0, width, height, 'grid');
     }
 
 }

@@ -10,7 +10,7 @@ class Background {
     }
 
     create(width, height) {
-        //this.game.add.tileSprite(0, 0, width, height, 'grid');
+        this.game.add.tileSprite(0, 0, width, height, 'grid');
     }
 
 }
@@ -32,9 +32,24 @@ class Ball {
 
         this.game.physics.enable(this.sprite, Phaser.Physics.ARCADE);
 
+        this.offset = new Phaser.Point(2, 2);
+        this.shadow = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
+        this.shadow.anchor.set(0.5);
+        this.shadow.tint = 0x000000;
+        this.shadow.alpha = 0.6;
+
         this.sprite.body.collideWorldBounds = true;
         this.sprite.body.bounce.set(1);
         this.sprite.events.onOutOfBounds.add(this.onOutOfBounds, this);
+
+        const group = this.game.add.group();
+        group.add(this.shadow);
+        group.add(this.sprite);
+    }
+
+    update() {
+        this.shadow.x = this.sprite.x + this.offset.x;
+        this.shadow.y = this.sprite.y + this.offset.y;
     }
 
     setX(x) {
@@ -85,7 +100,16 @@ class Ball {
             C: 'C',
             D: 'D',
             NEUTRAL: 'NEUTRAL',
+            MAXMODE: 'maxmode',
         };
+    }
+
+    activateMaxMode() {
+        this.type = Ball.Type.MAXMODE;
+    }
+
+    deactivateMaxMode() {
+        this.type = Ball.Type.NEUTRAL;
     }
 }
 
@@ -119,9 +143,9 @@ class BreakOutFighters {
 
     create(game) {
         this.background.create(this.width, this.height);
-        this.gameEngine.create();
         this.paddle.create();
         this.ball.create();
+        this.gameEngine.create();
         this.paddle.reset(this.ball);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
@@ -146,20 +170,24 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":14}],4:[function(require,module,exports){
+},{"./background":1,"./ball":2,"./game-engine":7,"./paddle":15}],4:[function(require,module,exports){
 class Brick {
     constructor(group, type, x, y) {
-        const brick = group.create(x, y, 'sprites', `${type}/${type}.png`);
-        brick.body.bounce.set(1);
-        brick.body.immovable = true;
-        brick.type = type;
+        this.sprite = group.create(x, y, 'sprites', `${type}/${type}.png`);
+        this.sprite.body.bounce.set(1);
+        this.sprite.body.immovable = true;
+        this.sprite.type = type;
+        this.sprite.animations.add('normal', Phaser.Animation.generateFrameNames(`${type}/`, 1, 1, '.png'));
+        this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/bricks_maxmode_', 1, 1, '.png'));
+        this.sprite.animations.play('normal');
     }
 
-    static reflect(_ball, _brick) {
-        if (_ball.type === _brick.type) {
-            _brick.kill();
-        }
-        this.collidedBrick = _brick;
+    activateMaxMode() {
+        this.sprite.animations.play('maxmode');
+    }
+
+    deactivateMaxMode() {
+        this.sprite.animations.play('normal');
     }
 }
 
@@ -172,6 +200,7 @@ class Bricks {
 
     constructor(game) {
         this.game = game;
+        this.bricks = [];
     }
 
     create() {
@@ -181,11 +210,17 @@ class Bricks {
     }
 
     addBrickAt(type, x, y) {
-        new Brick(this.group, type, x, y);
+        this.bricks.push(new Brick(this.group, type, x, y));
     }
 
     update(ball) {
-        if (this.game.physics.arcade.collide(ball.sprite, this.group, Brick.reflect, null, this)) {
+        const onCollision = (_ball, _brick) => {
+            if (this.maxmode || _ball.type === _brick.type) {
+                _brick.kill();
+            }
+            this.collidedBrick = _brick;
+        };
+        if (this.game.physics.arcade.collide(ball.sprite, this.group, onCollision, null, this)) {
             this.onBallHitBrick(this.collidedBrick);
         }
     }
@@ -215,6 +250,16 @@ class Bricks {
 
     get life() {
         return 100 * (this.count() / this.total);
+    }
+
+    activateMaxMode() {
+        this.maxmode = true;
+        this.bricks.forEach(brick => brick.activateMaxMode());
+    }
+
+    deactivateMaxMode() {
+        this.maxmode = false;
+        this.bricks.forEach(brick => brick.deactivateMaxMode());
     }
 
 }
@@ -255,6 +300,7 @@ class Player {
     constructor() {
         this.power = 0;
         this.reset();
+        this.power = 100;
     }
 
     receiveNormalDamage() {
@@ -290,6 +336,22 @@ class Player {
             this.specialMoving = false;
         }, SPECIAL_MOVE_TIMING);
     }
+
+    activateMaxMode() {
+        this.maxmode = true;
+        this.maxmodeActivationTime = new Date().getTime();
+    }
+
+    deactivateMaxMode() {
+        this.power = 0;
+        this.maxmode = false;
+        delete this.maxmodeActivationTime;
+    }
+
+    canActivateMaxmode() {
+        return this.power >= 100;
+    }
+
 }
 
 module.exports = Player;
@@ -304,6 +366,7 @@ const SpecialMoves = require('./special-moves');
 
 const SPECIAL_MOVE_POWER_BONUS = 10;
 const NORMAL_MOVE_POWER_BONUS = 1;
+const MAX_MODE_TIME = 10000;
 
 class GameEngine {
     constructor(game) {
@@ -334,6 +397,26 @@ class GameEngine {
         this.bricks.createWall(level1);
 
         this.hud.create(this.player, this.bricks);
+        this.hud.powerUIComponent.update(this.player.power);
+    }
+
+    onMaxModeActivation() {
+        this.player.activateMaxMode();
+        this.hud.activateMaxMode();
+        this.paddle.activateMaxMode();
+        this.ball.activateMaxMode();
+        this.bricks.activateMaxMode();
+        setTimeout(() => {
+            this.onMaxModeDeactivation();
+        }, MAX_MODE_TIME);
+    }
+
+    onMaxModeDeactivation() {
+        this.player.deactivateMaxMode();
+        this.hud.deactivateMaxMode();
+        this.paddle.deactivateMaxMode();
+        this.ball.deactivateMaxMode();
+        this.bricks.deactivateMaxMode();
     }
 
     bindControls() {
@@ -347,9 +430,11 @@ class GameEngine {
     }
 
     onBallLost() {
+        this.onMaxModeDeactivation();
         this.paddle.reset(this.ball);
         this.player.reset();
         this.bricks.reset();
+        this.hud.powerUIComponent.update(this.player.power);
         this.hud.playerLifeUIComponent.update(this.player.life);
         this.hud.levelLifeUIComponent.update(this.bricks.life);
     }
@@ -377,7 +462,9 @@ class GameEngine {
         } else {
             this.player.rush = 0;
         }
-        this.ball.type = Ball.Type.NEUTRAL;
+        if (!this.player.maxmode) {
+            this.ball.type = Ball.Type.NEUTRAL;
+        }
         this.hud.levelLifeUIComponent.update(this.bricks.life);
         this.hud.rushUIComponent.update(this.player.rush);
     }
@@ -399,19 +486,27 @@ class GameEngine {
         const time = new Date().getTime();
 
         if (this.aButton.isDown) {
-            this.ball.type = Ball.Type.A;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.A;
+            }
             this.insertInputHistory(Controls.buttons.A);
         }
         if (this.bButton.isDown) {
-            this.ball.type = Ball.Type.B;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.B;
+            }
             this.insertInputHistory(Controls.buttons.B);
         }
         if (this.cButton.isDown) {
-            this.ball.type = Ball.Type.C;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.C;
+            }
             this.insertInputHistory(Controls.buttons.C);
         }
         if (this.dButton.isDown) {
-            this.ball.type = Ball.Type.D;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.D;
+            }
             this.insertInputHistory(Controls.buttons.D);
         }
         if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
@@ -420,6 +515,9 @@ class GameEngine {
             }
             this.detectSpecialMove();
             this.paddle.release(this.ball);
+        }
+        if (this.bButton.isDown && this.cButton.isDown && this.player.canActivateMaxmode()) {
+            this.onMaxModeActivation();
         }
         if (this.leftDirection.isDown) {
             this.paddle.moveLeft();
@@ -443,9 +541,18 @@ class GameEngine {
         if (this.playerHasInputedJustDefend()) {
             this.player.justDefend();
         }
+
+        if (this.player.maxmode) {
+            this.player.power = 100 - (time - this.player.maxmodeActivationTime) / 100;
+        }
+
         this.paddle.update(this.ball);
         this.bricks.update(this.ball);
         this.hud.timeIUComponent.update(this.getRemainingTime(time));
+        if (this.player.maxmode) {
+            this.hud.powerUIComponent.update(this.player.power);
+        }
+        this.ball.update();
     }
 
     getRemainingTime(time) {
@@ -495,8 +602,9 @@ class GameEngine {
 }
 
 module.exports = GameEngine;
-},{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8,"./special-moves":15,"lodash":17}],8:[function(require,module,exports){
+},{"./ball":2,"./bricks":4,"./controls":5,"./domain/player":6,"./hud":8,"./special-moves":16,"lodash":18}],8:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-component');
+const MaxmodeUIComponent = require('./hud/components/maxmode-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
 const RushUIComponent = require('./hud/components/rush-component');
 const PowerUIComponent = require('./hud/components/power-component');
@@ -509,6 +617,7 @@ class HUD {
         this.playerLifeUIComponent = new LifeUIComponent(game);
         this.levelLifeUIComponent = new LifeUIComponent(game);
         this.justDefendUIComponent = new JustDefendUIComponent(game);
+        this.maxmodeUIComponent = new MaxmodeUIComponent(game);
         this.rushUIComponent = new RushUIComponent(game);
         this.powerUIComponent = new PowerUIComponent(game);
         this.timeIUComponent = new TimeUIComponent(game);
@@ -519,20 +628,29 @@ class HUD {
         this.levelLifeUIComponent.create(190, 10, bricks.life, true);
         this.powerUIComponent.create(10, 210);
         this.justDefendUIComponent.create();
+        this.maxmodeUIComponent.create();
         this.rushUIComponent.create();
         this.timeIUComponent.create(this.game.world.centerX - 10, 3);
     }
 
     preload() {
-        this.powerUIComponent.preload();
         this.playerLifeUIComponent.preload();
         this.levelLifeUIComponent.preload();
+    }
+
+    activateMaxMode() {
+        this.maxmodeUIComponent.show();
+        this.powerUIComponent.activateMaxMode();
+    }
+
+    deactivateMaxMode() {
+        this.powerUIComponent.deactivateMaxMode();
     }
 
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":9,"./hud/components/life-component":10,"./hud/components/power-component":11,"./hud/components/rush-component":12,"./hud/components/time-component":13}],9:[function(require,module,exports){
+},{"./hud/components/just-defend-component":9,"./hud/components/life-component":10,"./hud/components/maxmode-component":11,"./hud/components/power-component":12,"./hud/components/rush-component":13,"./hud/components/time-component":14}],9:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -587,14 +705,34 @@ class LifeUIComponent {
 }
 module.exports = LifeUIComponent;
 },{}],11:[function(require,module,exports){
-class PowerUIComponent {
+class MaxmodeUIComponent {
 
     constructor(game) {
         this.game = game;
     }
 
-    preload() {
-        this.game.load.image('power', 'assets/sprites/power.png');
+    create() {
+        this.component = this.game.add.text(10, 30, 'MAX MODE !', {
+            font: '10px Courrier',
+            fill: '#c961e3',
+        });
+        this.component.visible = false;
+    }
+
+    show() {
+        this.component.visible = true;
+        setTimeout(() => {
+            this.component.visible = false;
+        }, 2000);
+    }
+
+}
+module.exports = MaxmodeUIComponent;
+},{}],12:[function(require,module,exports){
+class PowerUIComponent {
+
+    constructor(game) {
+        this.game = game;
     }
 
     create(x, y) {
@@ -602,17 +740,26 @@ class PowerUIComponent {
             font: '10px Courrier',
             fill: '#00FF00',
         });
-        this.sprite = this.game.add.sprite(x + 30, y, 'power');
+        this.sprite = this.game.add.sprite(x + 30, y, 'sprites', 'power.png');
         this.sprite.crop(new Phaser.Rectangle(0, 0, 0, 10));
+        this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/', 1, 1, '.png'));
     }
 
     update(power) {
         this.sprite.cropRect.width = power;
         this.sprite.updateCrop();
     }
+
+    activateMaxMode() {
+        this.sprite.animations.play('maxmode');
+    }
+
+    deactivateMaxMode() {
+        this.sprite.animations.stop('maxmode');
+    }
 }
 module.exports = PowerUIComponent;
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 class RushUIComponent {
 
     constructor(game) {
@@ -634,7 +781,7 @@ class RushUIComponent {
 
 }
 module.exports = RushUIComponent;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 class TimeUIComponent {
 
     constructor(game) {
@@ -654,7 +801,7 @@ class TimeUIComponent {
     }
 }
 module.exports = TimeUIComponent;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -675,6 +822,7 @@ class Paddle {
 
         this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
         this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
+        this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/paddle_maxmode_', 1, 1, '.png'));
     }
 
     get x() {
@@ -772,9 +920,17 @@ class Paddle {
         this.sprite.frameName = 'paddle.png';
     }
 
+    activateMaxMode() {
+        this.sprite.animations.play('maxmode');
+    }
+
+    deactivateMaxMode() {
+        this.normalStance();
+    }
+
 }
 module.exports = Paddle;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 const _ = require('lodash');
 
 const templates = [
@@ -795,7 +951,7 @@ class SpecialMoves {
 }
 
 module.exports = SpecialMoves;
-},{"lodash":17}],16:[function(require,module,exports){
+},{"lodash":18}],17:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -809,7 +965,7 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 }, transparent, antialias);
-},{"./breakout-fighters":3}],17:[function(require,module,exports){
+},{"./breakout-fighters":3}],18:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -17897,4 +18053,4 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[16]);
+},{}]},{},[17]);

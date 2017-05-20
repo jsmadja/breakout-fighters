@@ -18,6 +18,7 @@ class Paddle {
 
         this.sprite.animations.add('just_defend', Phaser.Animation.generateFrameNames('just_defend/', 1, 1, '.png'));
         this.sprite.animations.add('damage', Phaser.Animation.generateFrameNames('damaged/', 1, 1, '.png'));
+        this.sprite.animations.add('maxmode', Phaser.Animation.generateFrameNames('maxmode/paddle_maxmode_', 1, 1, '.png'));
     }
 
     get x() {
@@ -113,6 +114,14 @@ class Paddle {
 
     normalStance() {
         this.sprite.frameName = 'paddle.png';
+    }
+
+    activateMaxMode() {
+        this.sprite.animations.play('maxmode');
+    }
+
+    deactivateMaxMode() {
+        this.normalStance();
     }
 
 }

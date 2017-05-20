@@ -8,6 +8,7 @@ const SpecialMoves = require('./special-moves');
 
 const SPECIAL_MOVE_POWER_BONUS = 10;
 const NORMAL_MOVE_POWER_BONUS = 1;
+const MAX_MODE_TIME = 10000;
 
 class GameEngine {
     constructor(game) {
@@ -38,6 +39,26 @@ class GameEngine {
         this.bricks.createWall(level1);
 
         this.hud.create(this.player, this.bricks);
+        this.hud.powerUIComponent.update(this.player.power);
+    }
+
+    onMaxModeActivation() {
+        this.player.activateMaxMode();
+        this.hud.activateMaxMode();
+        this.paddle.activateMaxMode();
+        this.ball.activateMaxMode();
+        this.bricks.activateMaxMode();
+        setTimeout(() => {
+            this.onMaxModeDeactivation();
+        }, MAX_MODE_TIME);
+    }
+
+    onMaxModeDeactivation() {
+        this.player.deactivateMaxMode();
+        this.hud.deactivateMaxMode();
+        this.paddle.deactivateMaxMode();
+        this.ball.deactivateMaxMode();
+        this.bricks.deactivateMaxMode();
     }
 
     bindControls() {
@@ -51,9 +72,11 @@ class GameEngine {
     }
 
     onBallLost() {
+        this.onMaxModeDeactivation();
         this.paddle.reset(this.ball);
         this.player.reset();
         this.bricks.reset();
+        this.hud.powerUIComponent.update(this.player.power);
         this.hud.playerLifeUIComponent.update(this.player.life);
         this.hud.levelLifeUIComponent.update(this.bricks.life);
     }
@@ -81,7 +104,9 @@ class GameEngine {
         } else {
             this.player.rush = 0;
         }
-        this.ball.type = Ball.Type.NEUTRAL;
+        if (!this.player.maxmode) {
+            this.ball.type = Ball.Type.NEUTRAL;
+        }
         this.hud.levelLifeUIComponent.update(this.bricks.life);
         this.hud.rushUIComponent.update(this.player.rush);
     }
@@ -103,19 +128,27 @@ class GameEngine {
         const time = new Date().getTime();
 
         if (this.aButton.isDown) {
-            this.ball.type = Ball.Type.A;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.A;
+            }
             this.insertInputHistory(Controls.buttons.A);
         }
         if (this.bButton.isDown) {
-            this.ball.type = Ball.Type.B;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.B;
+            }
             this.insertInputHistory(Controls.buttons.B);
         }
         if (this.cButton.isDown) {
-            this.ball.type = Ball.Type.C;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.C;
+            }
             this.insertInputHistory(Controls.buttons.C);
         }
         if (this.dButton.isDown) {
-            this.ball.type = Ball.Type.D;
+            if (!this.player.maxmode) {
+                this.ball.type = Ball.Type.D;
+            }
             this.insertInputHistory(Controls.buttons.D);
         }
         if (this.aButton.isDown || this.bButton.isDown || this.cButton.isDown || this.dButton.isDown) {
@@ -124,6 +157,9 @@ class GameEngine {
             }
             this.detectSpecialMove();
             this.paddle.release(this.ball);
+        }
+        if (this.bButton.isDown && this.cButton.isDown && this.player.canActivateMaxmode()) {
+            this.onMaxModeActivation();
         }
         if (this.leftDirection.isDown) {
             this.paddle.moveLeft();
@@ -147,9 +183,18 @@ class GameEngine {
         if (this.playerHasInputedJustDefend()) {
             this.player.justDefend();
         }
+
+        if (this.player.maxmode) {
+            this.player.power = 100 - (time - this.player.maxmodeActivationTime) / 100;
+        }
+
         this.paddle.update(this.ball);
         this.bricks.update(this.ball);
         this.hud.timeIUComponent.update(this.getRemainingTime(time));
+        if (this.player.maxmode) {
+            this.hud.powerUIComponent.update(this.player.power);
+        }
+        this.ball.update();
     }
 
     getRemainingTime(time) {

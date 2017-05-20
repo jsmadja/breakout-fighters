@@ -26,9 +26,9 @@ class BreakOutFighters {
 
     create(game) {
         this.background.create(this.width, this.height);
-        this.gameEngine.create();
         this.paddle.create();
         this.ball.create();
+        this.gameEngine.create();
         this.paddle.reset(this.ball);
 
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
