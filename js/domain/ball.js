@@ -1,12 +1,17 @@
-const speed = 0.5;
+const uuidV4 = require('uuid/v4');
+
+const BALL_SPEED = 0.5;
+
 class Ball {
 
-    constructor(game) {
+    constructor(game, onOutOfBounds) {
         this.game = game;
+        this.onOutOfBounds = onOutOfBounds;
     }
 
     create() {
         this.sprite = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
+        this.sprite.id = uuidV4();
         this.sprite.anchor.set(0.5);
         this.sprite.checkWorldBounds = true;
         this.type = Ball.Type.NEUTRAL;
@@ -38,8 +43,8 @@ class Ball {
     }
 
     release() {
-        this.sprite.body.velocity.y = -300 * speed;
-        this.sprite.body.velocity.x = -75 * speed;
+        this.sprite.body.velocity.y = -300 * BALL_SPEED;
+        this.sprite.body.velocity.x = -75 * BALL_SPEED;
         this.sprite.animations.play('spin');
     }
 

@@ -72,7 +72,7 @@ class BreakOutFighters {
 }
 
 module.exports = BreakOutFighters;
-},{"./background":1,"./domain/balls":5,"./domain/paddle":7,"./game-engine":10}],3:[function(require,module,exports){
+},{"./background":1,"./domain/balls":5,"./domain/paddle":8,"./game-engine":11}],3:[function(require,module,exports){
 class Controls {
 
     static get buttons() {
@@ -98,15 +98,20 @@ class Controls {
 
 module.exports = Controls;
 },{}],4:[function(require,module,exports){
-const speed = 0.5;
+const uuidV4 = require('uuid/v4');
+
+const BALL_SPEED = 0.5;
+
 class Ball {
 
-    constructor(game) {
+    constructor(game, onOutOfBounds) {
         this.game = game;
+        this.onOutOfBounds = onOutOfBounds;
     }
 
     create() {
         this.sprite = this.game.add.sprite(0, 0, 'sprites', 'ball.png');
+        this.sprite.id = uuidV4();
         this.sprite.anchor.set(0.5);
         this.sprite.checkWorldBounds = true;
         this.type = Ball.Type.NEUTRAL;
@@ -138,8 +143,8 @@ class Ball {
     }
 
     release() {
-        this.sprite.body.velocity.y = -300 * speed;
-        this.sprite.body.velocity.x = -75 * speed;
+        this.sprite.body.velocity.y = -300 * BALL_SPEED;
+        this.sprite.body.velocity.x = -75 * BALL_SPEED;
         this.sprite.animations.play('spin');
     }
 
@@ -195,19 +200,32 @@ class Ball {
 }
 
 module.exports = Ball;
-},{}],5:[function(require,module,exports){
+},{"uuid/v4":23}],5:[function(require,module,exports){
 const Ball = require('./ball');
+const _ = require('lodash');
 
 class Balls {
 
     constructor(game) {
         this.game = game;
-        this.balls = [];
-        this.addOne();
+        this.reset();
     }
 
-    addOne() {
-        this.balls.push(new Ball(this.game));
+    reset(onOutOfBounds) {
+        this.balls = [];
+        this.addOne(onOutOfBounds);
+    }
+
+    addOne(onOutOfBounds) {
+        const ball = new Ball(this.game, onOutOfBounds);
+        this.balls.push(ball);
+        return ball;
+    }
+
+    releaseNewOne(onOutOfBounds) {
+        const ball = this.addOne(onOutOfBounds);
+        ball.create();
+        ball.release();
     }
 
     create() {
@@ -223,10 +241,16 @@ class Balls {
     }
 
     get height() {
+        if(this.isEmpty()) {
+            return 0;
+        }
         return this.balls[0].height;
     }
 
     get width() {
+        if(this.isEmpty()) {
+            return 0;
+        }
         return this.balls[0].width;
     }
 
@@ -262,10 +286,20 @@ class Balls {
         return this.balls.forEach(callback, thisArg);
     }
 
+    isEmpty() {
+        return this.balls.length === 0;
+    }
+
+    destroyBySpriteId(spriteId) {
+        const ball = _.find(this.balls, ball => ball.sprite.id === spriteId);
+        ball.destroy();
+        _.remove(this.balls, ball => ball.sprite.id === spriteId);
+    }
+
 }
 
 module.exports = Balls;
-},{"./ball":4}],6:[function(require,module,exports){
+},{"./ball":4,"lodash":20}],6:[function(require,module,exports){
 const START_X = 3;
 const START_Y = 40;
 const BRICK_WIDTH = 20;
@@ -387,6 +421,24 @@ class Bricks {
 
 module.exports = Bricks;
 },{}],7:[function(require,module,exports){
+const _ = require('lodash');
+
+const templates = [
+    [39, 37, 'DOWN_LEFT', 40, 'DOWN_RIGHT', 65], // Haou Shokouken A
+];
+
+class DesperationMoves {
+    static isDesperationMove(history) {
+        return _(templates)
+                .map(template => _.isEqual(template, _.intersection(template, history)))
+                .filter(t => !!t)
+                .value()
+                .length > 0;
+    }
+}
+
+module.exports = DesperationMoves;
+},{"lodash":20}],8:[function(require,module,exports){
 class Paddle {
 
     constructor(game) {
@@ -529,7 +581,7 @@ class Paddle {
 
 }
 module.exports = Paddle;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const MAX_LIFE = 100;
 const JUST_DEFEND_TIMING = 200;
 const SPECIAL_MOVE_TIMING = 500;
@@ -537,7 +589,7 @@ const NORMAL_DAMAGE = 1;
 
 class Player {
     constructor() {
-        this.power = 0;
+        this.power = 100;
         this.reset();
     }
 
@@ -593,7 +645,7 @@ class Player {
 }
 
 module.exports = Player;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 const _ = require('lodash');
 
 const templates = [
@@ -614,7 +666,7 @@ class SpecialMoves {
 }
 
 module.exports = SpecialMoves;
-},{"lodash":19}],10:[function(require,module,exports){
+},{"lodash":20}],11:[function(require,module,exports){
 const Player = require('./domain/player');
 const Controls = require('./controls');
 const Bricks = require('./domain/bricks');
@@ -622,6 +674,7 @@ const HUD = require('./hud');
 const Ball = require('./domain/ball');
 const _ = require('lodash');
 const SpecialMoves = require('./domain/special-moves');
+const DesperationMoves = require('./domain/desperation-moves');
 
 const SPECIAL_MOVE_POWER_BONUS = 10;
 const NORMAL_MOVE_POWER_BONUS = 1;
@@ -688,14 +741,19 @@ class GameEngine {
         this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
     }
 
-    onBallLost() {
-        this.onMaxModeDeactivation();
-        this.paddle.reset(this.balls);
-        this.player.reset();
-        this.bricks.reset();
-        this.hud.powerUIComponent.update(this.player.power);
-        this.hud.playerLifeUIComponent.update(this.player.life);
-        this.hud.levelLifeUIComponent.update(this.bricks.life);
+    onBallLost(ball) {
+        this.balls.destroyBySpriteId(ball.id);
+        if (this.balls.isEmpty()) {
+            this.onMaxModeDeactivation();
+            this.balls.reset(this.onBallLost.bind(this));
+            this.balls.create();
+            this.paddle.reset(this.balls);
+            this.player.reset();
+            this.bricks.reset();
+            this.hud.powerUIComponent.update(this.player.power);
+            this.hud.playerLifeUIComponent.update(this.player.life);
+            this.hud.levelLifeUIComponent.update(this.bricks.life);
+        }
     }
 
     onBallHitPlayer() {
@@ -772,11 +830,15 @@ class GameEngine {
             if (this.paddle.ballOnPaddle) {
                 this.time = new Date().getTime();
             }
+            this.detectDesperationMove();
             this.detectSpecialMove();
             this.paddle.release(this.balls);
         }
         if (this.bButton.isDown && this.cButton.isDown && this.player.canActivateMaxmode()) {
             this.onMaxModeActivation();
+        }
+        if (this.aButton.isDown && this.bButton.isDown) {
+            this.doDesperationMove();
         }
         if (this.leftDirection.isDown) {
             this.paddle.moveLeft();
@@ -828,6 +890,23 @@ class GameEngine {
         }
     }
 
+    detectDesperationMove() {
+        const now = new Date().getTime();
+        const history = _(this.control_history).filter(input => (now - input.date) < 1000).map(input => input.input).value();
+        if (DesperationMoves.isDesperationMove(history)) {
+            this.control_history = [];
+            this.doDesperationMove();
+        }
+    }
+
+    doDesperationMove() {
+        if (this.player.power >= 100) {
+            this.player.power = 0;
+            this.balls.releaseNewOne(this.onBallLost.bind(this));
+            setTimeout(() => this.balls.releaseNewOne(this.onBallLost.bind(this)), 300);
+        }
+    }
+
     insertInputHistory(input) {
         if (input !== this.last_input) {
             this.control_history.push({ input, date: new Date().getTime() });
@@ -861,7 +940,7 @@ class GameEngine {
 }
 
 module.exports = GameEngine;
-},{"./controls":3,"./domain/ball":4,"./domain/bricks":6,"./domain/player":8,"./domain/special-moves":9,"./hud":11,"lodash":19}],11:[function(require,module,exports){
+},{"./controls":3,"./domain/ball":4,"./domain/bricks":6,"./domain/desperation-moves":7,"./domain/player":9,"./domain/special-moves":10,"./hud":12,"lodash":20}],12:[function(require,module,exports){
 const LifeUIComponent = require('./hud/components/life-component');
 const MaxmodeUIComponent = require('./hud/components/maxmode-component');
 const JustDefendUIComponent = require('./hud/components/just-defend-component');
@@ -909,7 +988,7 @@ class HUD {
 }
 
 module.exports = HUD;
-},{"./hud/components/just-defend-component":12,"./hud/components/life-component":13,"./hud/components/maxmode-component":14,"./hud/components/power-component":15,"./hud/components/rush-component":16,"./hud/components/time-component":17}],12:[function(require,module,exports){
+},{"./hud/components/just-defend-component":13,"./hud/components/life-component":14,"./hud/components/maxmode-component":15,"./hud/components/power-component":16,"./hud/components/rush-component":17,"./hud/components/time-component":18}],13:[function(require,module,exports){
 class JustDefendUIComponent {
 
     constructor(game) {
@@ -933,7 +1012,7 @@ class JustDefendUIComponent {
 
 }
 module.exports = JustDefendUIComponent;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 const SCALE_FACTOR = 1.3;
 
 class LifeUIComponent {
@@ -963,7 +1042,7 @@ class LifeUIComponent {
     }
 }
 module.exports = LifeUIComponent;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 class MaxmodeUIComponent {
 
     constructor(game) {
@@ -987,7 +1066,7 @@ class MaxmodeUIComponent {
 
 }
 module.exports = MaxmodeUIComponent;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 class PowerUIComponent {
 
     constructor(game) {
@@ -1018,7 +1097,7 @@ class PowerUIComponent {
     }
 }
 module.exports = PowerUIComponent;
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 class RushUIComponent {
 
     constructor(game) {
@@ -1040,7 +1119,7 @@ class RushUIComponent {
 
 }
 module.exports = RushUIComponent;
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 class TimeUIComponent {
 
     constructor(game) {
@@ -1060,7 +1139,7 @@ class TimeUIComponent {
     }
 }
 module.exports = TimeUIComponent;
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 const WIDTH = 320;
 const HEIGHT = 224;
 
@@ -1074,7 +1153,7 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
     create: breakOutFighters.create.bind(breakOutFighters),
     update: breakOutFighters.update.bind(breakOutFighters),
 }, transparent, antialias);
-},{"./breakout-fighters":2}],19:[function(require,module,exports){
+},{"./breakout-fighters":2}],20:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -18162,4 +18241,97 @@ new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'phaser-example', {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[18]);
+},{}],21:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return  bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
+
+},{}],22:[function(require,module,exports){
+(function (global){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = global.crypto || global.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16);
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var  rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+module.exports = rng;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],23:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+},{"./lib/bytesToUuid":21,"./lib/rng":22}]},{},[19]);

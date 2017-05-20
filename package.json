@@ -28,6 +28,7 @@
     "moment": "^2.18.1",
     "moment-timer": "^1.1.5",
     "require-text": "^0.0.1",
-    "text": "requirejs/text"
+    "text": "requirejs/text",
+    "uuid": "^3.0.1"
   }
 }

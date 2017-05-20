@@ -1,15 +1,28 @@
 const Ball = require('./ball');
+const _ = require('lodash');
 
 class Balls {
 
     constructor(game) {
         this.game = game;
-        this.balls = [];
-        this.addOne();
+        this.reset();
     }
 
-    addOne() {
-        this.balls.push(new Ball(this.game));
+    reset(onOutOfBounds) {
+        this.balls = [];
+        this.addOne(onOutOfBounds);
+    }
+
+    addOne(onOutOfBounds) {
+        const ball = new Ball(this.game, onOutOfBounds);
+        this.balls.push(ball);
+        return ball;
+    }
+
+    releaseNewOne(onOutOfBounds) {
+        const ball = this.addOne(onOutOfBounds);
+        ball.create();
+        ball.release();
     }
 
     create() {
@@ -25,10 +38,16 @@ class Balls {
     }
 
     get height() {
+        if(this.isEmpty()) {
+            return 0;
+        }
         return this.balls[0].height;
     }
 
     get width() {
+        if(this.isEmpty()) {
+            return 0;
+        }
         return this.balls[0].width;
     }
 
@@ -62,6 +81,16 @@ class Balls {
 
     forEach(callback, thisArg) {
         return this.balls.forEach(callback, thisArg);
+    }
+
+    isEmpty() {
+        return this.balls.length === 0;
+    }
+
+    destroyBySpriteId(spriteId) {
+        const ball = _.find(this.balls, ball => ball.sprite.id === spriteId);
+        ball.destroy();
+        _.remove(this.balls, ball => ball.sprite.id === spriteId);
     }
 
 }

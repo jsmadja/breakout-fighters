@@ -5,6 +5,7 @@ const HUD = require('./hud');
 const Ball = require('./domain/ball');
 const _ = require('lodash');
 const SpecialMoves = require('./domain/special-moves');
+const DesperationMoves = require('./domain/desperation-moves');
 
 const SPECIAL_MOVE_POWER_BONUS = 10;
 const NORMAL_MOVE_POWER_BONUS = 1;
@@ -71,14 +72,19 @@ class GameEngine {
         this.downDirection = this.game.input.keyboard.addKey(Controls.joystick.DOWN);
     }
 
-    onBallLost() {
-        this.onMaxModeDeactivation();
-        this.paddle.reset(this.balls);
-        this.player.reset();
-        this.bricks.reset();
-        this.hud.powerUIComponent.update(this.player.power);
-        this.hud.playerLifeUIComponent.update(this.player.life);
-        this.hud.levelLifeUIComponent.update(this.bricks.life);
+    onBallLost(ball) {
+        this.balls.destroyBySpriteId(ball.id);
+        if (this.balls.isEmpty()) {
+            this.onMaxModeDeactivation();
+            this.balls.reset(this.onBallLost.bind(this));
+            this.balls.create();
+            this.paddle.reset(this.balls);
+            this.player.reset();
+            this.bricks.reset();
+            this.hud.powerUIComponent.update(this.player.power);
+            this.hud.playerLifeUIComponent.update(this.player.life);
+            this.hud.levelLifeUIComponent.update(this.bricks.life);
+        }
     }
 
     onBallHitPlayer() {
@@ -155,11 +161,15 @@ class GameEngine {
             if (this.paddle.ballOnPaddle) {
                 this.time = new Date().getTime();
             }
+            this.detectDesperationMove();
             this.detectSpecialMove();
             this.paddle.release(this.balls);
         }
         if (this.bButton.isDown && this.cButton.isDown && this.player.canActivateMaxmode()) {
             this.onMaxModeActivation();
+        }
+        if (this.aButton.isDown && this.bButton.isDown) {
+            this.doDesperationMove();
         }
         if (this.leftDirection.isDown) {
             this.paddle.moveLeft();
@@ -208,6 +218,23 @@ class GameEngine {
         if (SpecialMoves.isSpecialMove(history)) {
             this.control_history = [];
             this.player.doSpecialMove();
+        }
+    }
+
+    detectDesperationMove() {
+        const now = new Date().getTime();
+        const history = _(this.control_history).filter(input => (now - input.date) < 1000).map(input => input.input).value();
+        if (DesperationMoves.isDesperationMove(history)) {
+            this.control_history = [];
+            this.doDesperationMove();
+        }
+    }
+
+    doDesperationMove() {
+        if (this.player.power >= 100) {
+            this.player.power = 0;
+            this.balls.releaseNewOne(this.onBallLost.bind(this));
+            setTimeout(() => this.balls.releaseNewOne(this.onBallLost.bind(this)), 300);
         }
     }
 
